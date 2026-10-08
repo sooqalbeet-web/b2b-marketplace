@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+/* Brand colors taken from the SOOQ AL BEET logo */
+@theme {
+  --color-brand: #13545e;        /* teal */
+  --color-brand-dark: #0d3d45;
+  --color-brand-light: #e6f0f1;
+  --color-accent: #780606;       /* maroon */
+  --color-accent-dark: #570404;
+  --color-accent-light: #f6e8e8;
+}
+
+body { font-family: "Segoe UI", Tahoma, "Noto Sans Arabic", "Noto Kufi Arabic", Arial, sans-serif; }

@@ -14,7 +14,7 @@ async function main() {
     ["packaging", "تغليف", "Packaging"],
     ["building", "مواد بناء", "Building Materials"],
   ];
-  const catRows = [];
+  const catRows: Awaited<ReturnType<typeof prisma.category.upsert>>[] = [];
   for (const [slug, nameAr, nameEn] of cats) {
     catRows.push(await prisma.category.upsert({ where: { slug }, update: {}, create: { slug, nameAr, nameEn } }));
   }

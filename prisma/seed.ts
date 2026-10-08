@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
-async function main() {
+async function main(const isProd = process.env.SEED_MODE === "production";) {
   const hash = await bcrypt.hash("Password123!", 12);
 
   const cats = [
@@ -20,10 +20,19 @@ async function main() {
   }
   const cat = (slug: string) => catRows.find((c) => c.slug === slug)!;
 
-  await prisma.user.upsert({
-    where: { email: "admin@example.com" }, update: {},
-    create: { email: "admin@example.com", name: "مدير النظام", passwordHash: hash, role: "ADMIN", emailVerifiedAt: new Date() },
-  });
+const adminEmail = isProd ? process.env.ADMIN_EMAIL : "admin@example.com";
+const adminPassword = isProd ? process.env.ADMIN_PASSWORD : "Password123!";
+if (!adminEmail || !adminPassword || (isProd && adminPassword.length < 12)) {
+  throw new Error("Production seed requires ADMIN_EMAIL and ADMIN_PASSWORD (12+ chars).");
+}
+await prisma.user.upsert({
+  where: { email: adminEmail }, update: {},
+  create: { email: adminEmail, name: "مدير النظام", passwordHash: await bcrypt.hash(adminPassword, 12), role: "ADMIN", emailVerifiedAt: new Date() },
+});
+if (isProd) {
+  console.log("Production seed done: categories + admin only.");
+  return;
+}
   await prisma.user.upsert({
     where: { email: "buyer@example.com" }, update: {},
     create: { email: "buyer@example.com", name: "مشترٍ تجريبي", passwordHash: hash, role: "CLIENT", phone: "0790000000", emailVerifiedAt: new Date() },

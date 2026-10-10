@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
-    "start": "next start",
+    "build": "prisma generate && (prisma db push --skip-generate || echo db-push-skipped) && next build",
+    "start": "(prisma db push --skip-generate || echo db-push-skipped) && next start",
     "db:push": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
     "postinstall": "prisma generate"
@@ -13,6 +13,7 @@
   "prisma": { "seed": "tsx prisma/seed.ts" },
   "dependencies": {
     "@prisma/client": "^6.0.0",
+    "prisma": "^6.0.0",
     "bcryptjs": "^2.4.3",
     "jose": "^5.9.0",
     "nodemailer": "^6.9.15",
@@ -27,7 +28,6 @@
     "@types/nodemailer": "^6.4.17",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "prisma": "^6.0.0",
     "tailwindcss": "^4.0.0",
     "tsx": "^4.19.0",
     "typescript": "^5.6.0"

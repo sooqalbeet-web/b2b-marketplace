@@ -78,6 +78,8 @@ model User {
   passwordHash String
   role         Role     @default(CLIENT)
   phone        String?
+  country      String?
+  description  String? @db.Text
   createdAt    DateTime @default(now())
   deletedAt    DateTime?
   emailVerifiedAt DateTime?
@@ -105,14 +107,14 @@ model Factory {
   id           String             @id @default(cuid())
   userId       String             @unique
   name         String
-  description  String?
-  logoUrl      String?
+  description  String? @db.Text
+  logoUrl      String? @db.Text
   country      String             @default("CN")
   region       String
-  address      String?
-  website      String?
-  capabilities String?
-  shippingReturnPolicy String?
+  address      String? @db.Text
+  website      String? @db.Text
+  capabilities String? @db.Text
+  shippingReturnPolicy String? @db.Text
   commercialRegNo String? @unique
   taxNo        String?
   deletedAt    DateTime?
@@ -163,7 +165,7 @@ model Certification {
   factoryId String
   name      String
   issuer    String?
-  fileUrl   String?
+  fileUrl   String? @db.Text
   issuedAt  DateTime?
   expiresAt DateTime?
   verified  Boolean   @default(false)
@@ -180,11 +182,11 @@ model Product {
   categoryId   String
   name         String
   sku          String
-  description  String?
+  description  String? @db.Text
   unit         String   @default("pcs")
   moq          Int      @default(1)
   leadTimeDays Int?
-  imageUrls    String[]
+  imageUrls    Json?
   active       Boolean  @default(true)
   createdAt    DateTime @default(now())
 
@@ -217,7 +219,7 @@ model InventoryTransaction {
   type      InventoryTransactionType
   quantity  Int
   reference String?
-  note      String?
+  note      String? @db.Text
   createdAt DateTime                 @default(now())
 
   factory Factory @relation(fields: [factoryId], references: [id])
@@ -233,7 +235,7 @@ model Quotation {
   factoryId    String
   productId    String?
   quantity     Int
-  specs        String?
+  specs        String? @db.Text
   targetPrice  Decimal?        @db.Decimal(14, 2)
   deliveryDate DateTime?
   status       QuotationStatus @default(SENT)
@@ -257,9 +259,9 @@ model QuotationOffer {
   unitPrice     Decimal   @db.Decimal(14, 2)
   quantity      Int
   leadTimeDays  Int?
-  paymentTerms  String?
-  shippingTerms String?
-  note          String?
+  paymentTerms  String? @db.Text
+  shippingTerms String? @db.Text
+  note          String? @db.Text
   validUntil    DateTime?
   createdAt     DateTime  @default(now())
 
@@ -299,7 +301,7 @@ model Shipment {
   orderId        String    @unique
   carrier        String?
   trackingNumber String?
-  note           String?
+  note           String? @db.Text
   shippedAt      DateTime  @default(now())
   deliveredAt    DateTime?
 
@@ -339,7 +341,7 @@ model QualityInspection {
   inspectedQuantity Int
   passedQuantity    Int           @default(0)
   failedQuantity    Int           @default(0)
-  notes             String?
+  notes             String? @db.Text
   inspectedById     String?
   inspectedAt       DateTime?
   createdAt         DateTime      @default(now())
@@ -360,7 +362,7 @@ model QualityTransaction {
   qualityInspectionId String
   type                QualityTransactionType
   quantity            Int
-  note                String?
+  note                String? @db.Text
   createdAt           DateTime               @default(now())
 
   qualityInspection QualityInspection @relation(fields: [qualityInspectionId], references: [id])
@@ -391,7 +393,7 @@ model Message {
   id             String    @id @default(cuid())
   conversationId String
   senderId       String
-  body           String
+  body           String @db.Text
   readAt         DateTime?
   createdAt      DateTime  @default(now())
 

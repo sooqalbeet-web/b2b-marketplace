@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { createSession, hashPassword } from "@/lib/auth";
 import { HttpError, errorResponse } from "@/lib/guards";
 import { issueVerificationCode } from "@/lib/verification";
+import { countryByCode, DEFAULT_COUNTRY } from "@/lib/countries";
 import { normalizeMobile, normalizeRegNo, normalizeTaxNo } from "@/lib/validators";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -29,7 +30,15 @@ export async function POST(request: NextRequest) {
       throw new HttpError(400, "Factory name and region are required.");
     }
 
+    const country = countryByCode(String(b.country ?? DEFAULT_COUNTRY).toUpperCase());
+    if (!country) throw new HttpError(400, "Invalid country.");
     const phone = normalizeMobile(b.phone);
+    if (!phone.startsWith("+" + country.dial)) throw new HttpError(400, "Phone number does not match the selected country.");
+
+    const description = String(b.description ?? "").trim();
+    if (role === "FACTORY" && (description.length < 20 || description.length > 1000)) {
+      throw new HttpError(400, "Factory description is required (20 to 1000 characters).");
+    }
     const commercialRegNo = role === "FACTORY" ? normalizeRegNo(b.commercialRegNo) : null;
     const taxNo = role === "FACTORY" ? normalizeTaxNo(b.taxNo) : null;
 
@@ -44,7 +53,7 @@ export async function POST(request: NextRequest) {
           role,
           phone,
           ...(role === "FACTORY"
-            ? { factory: { create: { name: factoryName, region, commercialRegNo, taxNo } } }
+            ? { factory: { create: { name: factoryName, description, country: country.code, region, commercialRegNo, taxNo } } }
             : {}),
         },
       });

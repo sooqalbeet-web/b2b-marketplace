@@ -9,22 +9,25 @@ export default function VerifyEmailPage() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [cooldown, setCooldown] = useState(0);
+  const [whatsapp, setWhatsapp] = useState(false);
   const started = useRef(false);
 
   const go = (role: string) => {
     window.location.href = role === "FACTORY" ? "/factory/dashboard" : role === "ADMIN" ? "/admin" : "/marketplace";
   };
 
-  const send = useCallback(async () => {
+  const send = useCallback(async (channel: "email" | "whatsapp" = "email") => {
     setError(""); setInfo("");
-    const r = await fetch("/api/auth/verify-email/send", { method: "POST" });
+    const r = await fetch("/api/auth/verify-email/send", {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ channel }),
+    });
     const d = await r.json();
     if (r.ok && d.verified) {
       const me = await (await fetch("/api/auth/me")).json();
       return go(me.user?.role);
     }
-    if (r.ok) { setInfo("أرسلنا رمزاً من 6 أرقام إلى بريدك الإلكتروني المسجّل."); setCooldown(60); return; }
-    if (r.status === 429) { setInfo("أُرسل رمز قبل قليل. تحقق من بريدك (وملف الرسائل المزعجة)، أو انتظر دقيقة لإعادة الإرسال."); setCooldown(60); return; }
+    if (r.ok) { setInfo(channel === "whatsapp" ? "أرسلنا رمزاً من 6 أرقام إلى رقم واتساب المسجّل لدينا." : "أرسلنا رمزاً من 6 أرقام إلى بريدك الإلكتروني المسجّل."); setCooldown(60); return; }
+    if (r.status === 429) { setInfo("أُرسل رمز قبل قليل. تحقق من بريدك (وملف الرسائل المزعجة) أو من واتساب، أو انتظر دقيقة لإعادة الإرسال."); setCooldown(60); return; }
     setError(d.error);
   }, []);
 
@@ -33,6 +36,7 @@ export default function VerifyEmailPage() {
     if (started.current) return;
     started.current = true;
     send();
+    fetch("/api/auth/verify-email/channels").then((r) => r.json()).then((d) => setWhatsapp(Boolean(d.whatsapp))).catch(() => {});
   }, [send]);
 
   useEffect(() => {
@@ -56,7 +60,7 @@ export default function VerifyEmailPage() {
     <div className="mx-auto mt-12 max-w-sm space-y-3 p-6">
       <Image src="/emblem.png" alt="" width={96} height={96} className="mx-auto h-20 w-20" />
       <h1 className="text-center text-2xl font-bold text-brand">توثيق البريد الإلكتروني</h1>
-      <p className="text-center text-sm text-gray-600">أدخل الرمز المكوّن من 6 أرقام لاتينية الذي وصلك على بريدك. صالح لمدة 10 دقائق.</p>
+      <p className="text-center text-sm text-gray-600">أدخل الرمز المكوّن من 6 أرقام لاتينية الذي وصلك. صالح لمدة 10 دقائق.</p>
       {info && <p className="rounded bg-brand-light p-2 text-sm text-brand">{info}</p>}
       {error && <p className="text-sm text-red-600">{error}</p>}
       <input
@@ -67,10 +71,16 @@ export default function VerifyEmailPage() {
       />
       <button onClick={confirm} disabled={busy || code.length !== 6}
         className="w-full rounded bg-brand p-2 text-white disabled:opacity-50">تأكيد</button>
-      <button onClick={send} disabled={cooldown > 0}
+      <button onClick={() => send("email")} disabled={cooldown > 0}
         className="w-full rounded border p-2 text-sm disabled:opacity-50">
-        {cooldown > 0 ? `إعادة الإرسال بعد ${cooldown} ث` : "إعادة إرسال الرمز"}
+        {cooldown > 0 ? `إعادة الإرسال بعد ${cooldown} ث` : "إعادة إرسال الرمز بالبريد"}
       </button>
+      {whatsapp && (
+        <button onClick={() => send("whatsapp")} disabled={cooldown > 0}
+          className="w-full rounded bg-green-600 p-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50">
+          إرسال الرمز عبر واتساب
+        </button>
+      )}
     </div>
   );
 }

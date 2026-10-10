@@ -3,14 +3,17 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
+import PhoneInput from "@/components/PhoneInput";
+import { buildPhone, DEFAULT_COUNTRY } from "@/lib/countries";
 
 export default function RegisterPage() {
   const [role, setRole] = useState<"CLIENT" | "FACTORY">("CLIENT");
-  const [f, setF] = useState({ name: "", email: "", password: "", phone: "", factoryName: "", region: "", commercialRegNo: "", taxNo: "" });
+  const [f, setF] = useState({ name: "", email: "", password: "", phone: "", factoryName: "", description: "", region: "", commercialRegNo: "", taxNo: "" });
+  const [country, setCountry] = useState(DEFAULT_COUNTRY);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) =>
+  const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setF({ ...f, [k]: e.target.value });
 
   async function submit() {
@@ -19,7 +22,7 @@ export default function RegisterPage() {
     const r = await fetch("/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...f, role }),
+      body: JSON.stringify({ ...f, phone: buildPhone(country, f.phone), country, role }),
     });
     const d = await r.json();
     setBusy(false);
@@ -32,7 +35,7 @@ export default function RegisterPage() {
     `flex-1 rounded border p-2 ${role === r ? "bg-brand text-white" : ""}`;
 
   return (
-    <div className="mx-auto mt-12 max-w-sm space-y-3 p-6">
+    <div className="mx-auto mt-12 max-w-md space-y-3 p-6">
       <Image src="/emblem.png" alt="" width={96} height={96} className="mx-auto h-20 w-20" />
       <h1 className="text-center text-2xl font-bold text-brand">إنشاء حساب</h1>
 
@@ -45,12 +48,18 @@ export default function RegisterPage() {
       <input className={field} type="email" placeholder="البريد الإلكتروني" value={f.email} onChange={set("email")} />
       <input className={field} type="password" placeholder="كلمة المرور (8 أحرف على الأقل)" value={f.password}
         onChange={set("password")} />
-      <input className={field} dir="ltr" inputMode="tel" placeholder="رقم الموبايل بأرقام لاتينية (مثل 0791234567)" value={f.phone} onChange={set("phone")} />
+      <div>
+        <label className="mb-1 block text-sm font-medium text-gray-700">رقم الهاتف (اختر الدولة من القائمة)</label>
+        <PhoneInput country={country} onCountry={setCountry} value={f.phone} onChange={(v) => setF({ ...f, phone: v })} />
+        <p className="mt-1 text-xs text-gray-500">تُحدَّد دولتك من رمز الدولة، ويُكتب الرقم بدون الصفر الأول (مثل 791234567).</p>
+      </div>
 
       {role === "FACTORY" && (
         <>
           <input className={field} placeholder="اسم المصنع" value={f.factoryName} onChange={set("factoryName")} />
-          <input className={field} placeholder="المنطقة (مثل عمّان)" value={f.region} onChange={set("region")} />
+          <textarea className={field} rows={4} maxLength={1000} placeholder="وصف المصنع: ماذا تصنّع؟ الطاقة الإنتاجية، الخبرة، الأسواق… (20 حرفاً على الأقل)" value={f.description} onChange={set("description")} />
+          <p className="-mt-2 text-end text-xs text-gray-400">{f.description.trim().length} / 1000</p>
+          <input className={field} placeholder="المدينة / المنطقة (مثل عمّان)" value={f.region} onChange={set("region")} />
           <input className={field} dir="ltr" placeholder="رقم السجل التجاري / الصناعي" value={f.commercialRegNo} onChange={set("commercialRegNo")} />
           <input className={field} dir="ltr" placeholder="الرقم الضريبي" value={f.taxNo} onChange={set("taxNo")} />
           <p className="text-xs text-gray-500">يجب أن يطابق اسم المصنع الاسم الرسمي في السجل؛ ولا يُسمح بأكثر من حساب لنفس السجل.</p>
@@ -58,7 +67,7 @@ export default function RegisterPage() {
       )}
 
       {error && <p className="text-sm text-red-600">{error}</p>}
-      <button disabled={busy || !f.name || !f.email || !f.password || !f.phone || (role === "FACTORY" && (!f.factoryName || !f.region || !f.commercialRegNo || !f.taxNo))} onClick={submit}
+      <button disabled={busy || !f.name || !f.email || !f.password || !f.phone || (role === "FACTORY" && (!f.factoryName || f.description.trim().length < 20 || !f.region || !f.commercialRegNo || !f.taxNo))} onClick={submit}
         className="w-full rounded bg-brand p-2 text-white disabled:opacity-50">إنشاء الحساب</button>
       <p className="text-center text-xs text-gray-500">بإنشاء حساب فإنك توافق على <Link href="/terms" className="text-brand underline">الشروط والأحكام</Link> و<Link href="/privacy" className="text-brand underline">سياسة الخصوصية</Link>.</p>
       <p className="text-sm text-gray-500">

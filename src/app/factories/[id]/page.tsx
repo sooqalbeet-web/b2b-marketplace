@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { countryByCode, flagUrl } from "@/lib/countries";
 
 type Product = { id: string; name: string; sku: string; unit: string; moq: number; leadTimeDays: number | null };
 type Factory = {
   id: string;
   name: string;
   description: string | null;
+  country: string;
   region: string;
   address: string | null;
   website: string | null;
@@ -79,7 +81,16 @@ export default function FactoryProfilePage() {
       <h1 className="text-2xl font-bold">
         {factory.name} {factory.verification === "VERIFIED" && <span className="text-green-600">✓</span>}
       </h1>
-      <p className="mb-4 text-gray-500">{factory.region}{factory.address ? ` · ${factory.address}` : ""}</p>
+      <p className="mb-4 flex flex-wrap items-center gap-2 text-gray-500">
+        {countryByCode(factory.country) && (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={flagUrl(factory.country)} alt="" width={24} height={16} className="h-4 w-6 rounded-sm object-cover ring-1 ring-black/10" />
+            <span>{countryByCode(factory.country)!.ar} ·</span>
+          </>
+        )}
+        <span>{factory.region}{factory.address ? ` · ${factory.address}` : ""}</span>
+      </p>
       <button onClick={messageFactory} className="mb-4 rounded border border-brand px-4 py-2 text-brand">
         راسل المصنع
       </button>

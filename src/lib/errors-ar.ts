@@ -85,6 +85,12 @@ const M: Record<string, string> = {
   "Code expired or not found. Request a new one.": "الرمز منتهي أو غير موجود. اطلب رمزاً جديداً.",
   "Too many attempts. Request a new code.": "محاولات كثيرة. اطلب رمزاً جديداً.",
   "Incorrect verification code.": "رمز التحقق غير صحيح.",
+  "Could not send the WhatsApp message. Try again later.": "تعذّر إرسال رسالة واتساب. حاول لاحقاً أو استخدم البريد الإلكتروني.",
+  "WhatsApp verification is not available.": "التحقق عبر واتساب غير متاح حالياً.",
+  "No phone number on this account.": "لا يوجد رقم هاتف مسجّل لهذا الحساب.",
+  "Invalid country.": "الدولة غير صالحة.",
+  "Phone number does not match the selected country.": "رقم الهاتف لا يطابق رمز الدولة المختارة.",
+  "Factory description is required (20 to 1000 characters).": "وصف المصنع مطلوب (من 20 إلى 1000 حرف).",
   "Authentication required.": "يجب تسجيل الدخول أولاً.",
   "Internal server error.": "حدث خطأ في الخادم.",
 };

@@ -2,6 +2,7 @@ import { createHmac, randomInt, timingSafeEqual } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { HttpError } from "@/lib/guards";
 import { sendMail } from "@/lib/mail";
+import { sendWhatsAppCode } from "@/lib/whatsapp";
 
 export const CODE_TTL_MS = 10 * 60 * 1000;
 export const RESEND_COOLDOWN_MS = 60 * 1000;
@@ -11,7 +12,7 @@ const hashCode = (userId: string, code: string) =>
   createHmac("sha256", process.env.AUTH_SECRET ?? "").update(`${userId}:${code}`).digest("hex");
 
 /** Creates (or replaces) the user's 6-digit code and emails it. Throws 429 inside the cooldown window. */
-export async function issueVerificationCode(userId: string, email: string, opts?: { enforceCooldown?: boolean }) {
+export async function issueVerificationCode(userId: string, email: string, opts?: { enforceCooldown?: boolean; channel?: "email" | "whatsapp"; phone?: string | null }) {
   if (opts?.enforceCooldown) {
     const existing = await prisma.emailVerification.findUnique({ where: { userId } });
     if (existing && Date.now() - existing.sentAt.getTime() < RESEND_COOLDOWN_MS) {
@@ -23,21 +24,28 @@ export async function issueVerificationCode(userId: string, email: string, opts?
   const data = { codeHash: hashCode(userId, code), expiresAt: new Date(Date.now() + CODE_TTL_MS), attempts: 0, sentAt: new Date() };
   await prisma.emailVerification.upsert({ where: { userId }, update: data, create: { userId, ...data } });
 
+  const channel = opts?.channel ?? "email";
   try {
-    await sendMail({
-      to: email,
-      subject: "رمز التحقق — سوق البيت",
-      text: `رمز التحقق الخاص بك: ${code}\nصالح لمدة 10 دقائق. إذا لم تطلبه فتجاهل هذه الرسالة.`,
-      html: `<div dir="rtl" style="font-family:Tahoma,Arial,sans-serif;line-height:1.8">
+    if (channel === "whatsapp") {
+      if (!opts?.phone) throw new HttpError(400, "No phone number on this account.");
+      await sendWhatsAppCode(opts.phone, code);
+    } else {
+      await sendMail({
+        to: email,
+        subject: "رمز التحقق — سوق البيت",
+        text: `رمز التحقق الخاص بك: ${code}\nصالح لمدة 10 دقائق. إذا لم تطلبه فتجاهل هذه الرسالة.`,
+        html: `<div dir="rtl" style="font-family:Tahoma,Arial,sans-serif;line-height:1.8">
         <h2 style="color:#13545e">سوق البيت — SOOQ AL BEET</h2>
         <p>رمز التحقق الخاص بك:</p>
         <p style="font-size:32px;letter-spacing:8px;font-weight:bold;color:#780606" dir="ltr">${code}</p>
         <p>صالح لمدة 10 دقائق. إذا لم تطلبه فتجاهل هذه الرسالة.</p></div>`,
-    });
+      });
+    }
   } catch (e) {
     await prisma.emailVerification.deleteMany({ where: { userId } }); // let the user retry immediately
-    console.error("sendMail failed", e);
-    throw new HttpError(502, "Could not send the verification email. Try again later.");
+    if (e instanceof HttpError) throw e;
+    console.error(`${channel} send failed`, e);
+    throw new HttpError(502, channel === "whatsapp" ? "Could not send the WhatsApp message. Try again later." : "Could not send the verification email. Try again later.");
   }
 }
 

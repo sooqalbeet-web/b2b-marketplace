@@ -1,17 +1,51 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { requireRole, errorResponse } from "@/lib/guards";
-import { CATEGORIES } from "@/lib/category-list";
+import { errorResponse } from "@/lib/guards";
 
-// Admin: creates any missing categories and refreshes names. Never deletes categories (factories may use them).
-export async function POST() {
+// Public marketplace directory. Filters: q (factory name), category (slug), country (ISO code), region, cert, verified
+export async function GET(request: NextRequest) {
   try {
-    await requireRole("ADMIN");
-    for (const [slug, nameAr, nameEn] of CATEGORIES) {
-      await prisma.category.upsert({ where: { slug }, update: { nameAr, nameEn }, create: { slug, nameAr, nameEn } });
+    const p = request.nextUrl.searchParams;
+    const q = p.get("q")?.trim();
+    const category = p.get("category");
+    const region = p.get("region");
+    const country = p.get("country");
+    const cert = p.get("cert")?.trim();
+    const verified = p.get("verified") === "1";
+
+    const where: Prisma.FactoryWhereInput = { deletedAt: null };
+    if (q) where.name = { contains: q };
+    if (country) where.country = country;
+    if (region) where.region = region;
+    if (verified) where.verification = "VERIFIED";
+    if (category) where.categories = { some: { category: { slug: category } } };
+    if (cert) {
+      where.certifications = {
+        some: { name: { contains: cert } },
+      };
     }
-    const total = await prisma.category.count();
-    return NextResponse.json({ synced: CATEGORIES.length, total });
+
+    const factories = await prisma.factory.findMany({
+      where,
+      select: {
+        id: true,
+        name: true,
+        country: true,
+        region: true,
+        description: true,
+        logoUrl: true,
+        verification: true,
+        featured: true,
+        categories: { select: { category: { select: { slug: true, nameAr: true, nameEn: true } } } },
+        certifications: { select: { name: true, verified: true } },
+        _count: { select: { products: true } },
+      },
+      orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
+      take: 50,
+    });
+
+    return NextResponse.json({ factories });
   } catch (error) {
     return errorResponse(error);
   }

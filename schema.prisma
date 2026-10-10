@@ -1,0 +1,404 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CLIENT
+  FACTORY
+  ADMIN
+}
+
+enum PartyRole {
+  CLIENT
+  FACTORY
+}
+
+enum VerificationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum QuotationStatus {
+  SENT
+  RECEIVED
+  QUOTED
+  NEGOTIATION
+  ACCEPTED
+  REJECTED
+}
+
+enum OrderStatus {
+  CONFIRMED
+  IN_PRODUCTION
+  QC
+  READY_TO_SHIP
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum InventoryTransactionType {
+  ADJUSTMENT
+  QUALITY_PASS
+  STOCK_OUT
+}
+
+enum ProductionStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum QualityStatus {
+  PENDING
+  PASSED
+  FAILED
+  PARTIAL
+}
+
+enum QualityTransactionType {
+  INSPECTION
+  PASS
+  FAIL
+  REWORK
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         Role     @default(CLIENT)
+  phone        String?
+  country      String?
+  description  String? @db.Text
+  createdAt    DateTime @default(now())
+  deletedAt    DateTime?
+  emailVerifiedAt DateTime?
+
+  emailVerification EmailVerification?
+  factory       Factory?
+  quotations    Quotation[]
+  orders        Order[]
+  participants  ConversationParticipant[]
+  messages      Message[]
+}
+
+model EmailVerification {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  codeHash  String
+  expiresAt DateTime
+  attempts  Int      @default(0)
+  sentAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Factory {
+  id           String             @id @default(cuid())
+  userId       String             @unique
+  name         String
+  description  String? @db.Text
+  logoUrl      String? @db.Text
+  country      String             @default("CN")
+  region       String
+  address      String? @db.Text
+  website      String? @db.Text
+  capabilities String? @db.Text
+  shippingReturnPolicy String? @db.Text
+  commercialRegNo String? @unique
+  taxNo        String?
+  deletedAt    DateTime?
+  verification VerificationStatus @default(UNVERIFIED)
+  featured     Boolean            @default(false)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  user               User                   @relation(fields: [userId], references: [id])
+  categories         FactoryCategory[]
+  certifications     Certification[]
+  products           Product[]
+  quotations         Quotation[]
+  orders             Order[]
+  inventoryTx        InventoryTransaction[]
+  productionOrders   ProductionOrder[]
+  qualityInspections QualityInspection[]
+
+  @@index([region])
+  @@index([verification])
+}
+
+model Category {
+  id       String  @id @default(cuid())
+  slug     String  @unique
+  nameAr   String
+  nameEn   String
+  parentId String?
+
+  parent    Category?         @relation("CategoryTree", fields: [parentId], references: [id])
+  children  Category[]        @relation("CategoryTree")
+  factories FactoryCategory[]
+  products  Product[]
+}
+
+model FactoryCategory {
+  factoryId  String
+  categoryId String
+
+  factory  Factory  @relation(fields: [factoryId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id])
+
+  @@id([factoryId, categoryId])
+}
+
+model Certification {
+  id        String    @id @default(cuid())
+  factoryId String
+  name      String
+  issuer    String?
+  fileUrl   String? @db.Text
+  issuedAt  DateTime?
+  expiresAt DateTime?
+  verified  Boolean   @default(false)
+  createdAt DateTime  @default(now())
+
+  factory Factory @relation(fields: [factoryId], references: [id], onDelete: Cascade)
+
+  @@index([factoryId])
+}
+
+model Product {
+  id           String   @id @default(cuid())
+  factoryId    String
+  categoryId   String
+  name         String
+  sku          String
+  description  String? @db.Text
+  unit         String   @default("pcs")
+  moq          Int      @default(1)
+  leadTimeDays Int?
+  imageUrls    Json?
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  factory            Factory                @relation(fields: [factoryId], references: [id])
+  category           Category               @relation(fields: [categoryId], references: [id])
+  inventory          Inventory?
+  inventoryTx        InventoryTransaction[]
+  quotations         Quotation[]
+  orders             Order[]
+  productionOrders   ProductionOrder[]
+  qualityInspections QualityInspection[]
+
+  @@unique([factoryId, sku])
+  @@index([categoryId])
+}
+
+model Inventory {
+  id               String @id @default(cuid())
+  productId        String @unique
+  currentQuantity  Int    @default(0)
+  reservedQuantity Int    @default(0)
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model InventoryTransaction {
+  id        String                   @id @default(cuid())
+  factoryId String
+  productId String
+  type      InventoryTransactionType
+  quantity  Int
+  reference String?
+  note      String? @db.Text
+  createdAt DateTime                 @default(now())
+
+  factory Factory @relation(fields: [factoryId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([factoryId, createdAt])
+}
+
+model Quotation {
+  id           String          @id @default(cuid())
+  number       String          @unique
+  clientId     String
+  factoryId    String
+  productId    String?
+  quantity     Int
+  specs        String? @db.Text
+  targetPrice  Decimal?        @db.Decimal(14, 2)
+  deliveryDate DateTime?
+  status       QuotationStatus @default(SENT)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  client  User             @relation(fields: [clientId], references: [id])
+  factory Factory          @relation(fields: [factoryId], references: [id])
+  product Product?         @relation(fields: [productId], references: [id])
+  offers  QuotationOffer[]
+  order   Order?
+
+  @@index([clientId])
+  @@index([factoryId, status])
+}
+
+model QuotationOffer {
+  id            String    @id @default(cuid())
+  quotationId   String
+  fromRole      PartyRole
+  unitPrice     Decimal   @db.Decimal(14, 2)
+  quantity      Int
+  leadTimeDays  Int?
+  paymentTerms  String? @db.Text
+  shippingTerms String? @db.Text
+  note          String? @db.Text
+  validUntil    DateTime?
+  createdAt     DateTime  @default(now())
+
+  quotation Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+
+  @@index([quotationId, createdAt])
+}
+
+model Order {
+  id           String      @id @default(cuid())
+  number       String      @unique
+  quotationId  String      @unique
+  clientId     String
+  factoryId    String
+  productId    String?
+  status       OrderStatus @default(CONFIRMED)
+  quantity     Int
+  unitPrice    Decimal     @db.Decimal(14, 2)
+  totalPrice   Decimal     @db.Decimal(14, 2)
+  deliveryDate DateTime?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  quotation  Quotation        @relation(fields: [quotationId], references: [id])
+  client     User             @relation(fields: [clientId], references: [id])
+  factory    Factory          @relation(fields: [factoryId], references: [id])
+  product    Product?         @relation(fields: [productId], references: [id])
+  production ProductionOrder?
+  shipment   Shipment?
+
+  @@index([clientId])
+  @@index([factoryId, status])
+}
+
+model Shipment {
+  id             String    @id @default(cuid())
+  orderId        String    @unique
+  carrier        String?
+  trackingNumber String?
+  note           String? @db.Text
+  shippedAt      DateTime  @default(now())
+  deliveredAt    DateTime?
+
+  order Order @relation(fields: [orderId], references: [id])
+}
+
+model ProductionOrder {
+  id               String           @id @default(cuid())
+  productionNumber String           @unique
+  orderId          String           @unique
+  factoryId        String
+  productId        String?
+  status           ProductionStatus @default(IN_PROGRESS)
+  plannedQuantity  Int
+  producedQuantity Int              @default(0)
+  startedAt        DateTime         @default(now())
+  completedAt      DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  order              Order               @relation(fields: [orderId], references: [id])
+  factory            Factory             @relation(fields: [factoryId], references: [id])
+  product            Product?            @relation(fields: [productId], references: [id])
+  qualityInspections QualityInspection[]
+
+  @@index([factoryId])
+  @@index([status])
+}
+
+model QualityInspection {
+  id                String        @id @default(cuid())
+  inspectionNumber  String        @unique
+  productionOrderId String
+  factoryId         String
+  productId         String?
+  status            QualityStatus @default(PENDING)
+  inspectedQuantity Int
+  passedQuantity    Int           @default(0)
+  failedQuantity    Int           @default(0)
+  notes             String? @db.Text
+  inspectedById     String?
+  inspectedAt       DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  productionOrder ProductionOrder      @relation(fields: [productionOrderId], references: [id])
+  factory         Factory              @relation(fields: [factoryId], references: [id])
+  product         Product?             @relation(fields: [productId], references: [id])
+  transactions    QualityTransaction[]
+
+  @@index([factoryId])
+  @@index([productionOrderId])
+  @@index([status])
+}
+
+model QualityTransaction {
+  id                  String                 @id @default(cuid())
+  qualityInspectionId String
+  type                QualityTransactionType
+  quantity            Int
+  note                String? @db.Text
+  createdAt           DateTime               @default(now())
+
+  qualityInspection QualityInspection @relation(fields: [qualityInspectionId], references: [id])
+
+  @@index([qualityInspectionId])
+}
+
+model Conversation {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  participants ConversationParticipant[]
+  messages     Message[]
+}
+
+model ConversationParticipant {
+  conversationId String
+  userId         String
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id])
+
+  @@id([conversationId, userId])
+  @@index([userId])
+}
+
+model Message {
+  id             String    @id @default(cuid())
+  conversationId String
+  senderId       String
+  body           String @db.Text
+  readAt         DateTime?
+  createdAt      DateTime  @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation(fields: [senderId], references: [id])
+
+  @@index([conversationId, createdAt])
+}

@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
-import { prisma } from "./prisma";
-import { CATEGORIES } from "./category-list";
+import { prisma } from "@/lib/prisma";
+import { CATEGORIES } from "@/lib/category-list";
 
 // Runs once when the server starts (see src/instrumentation.ts). Safe to run repeatedly.
 //  1) makes sure the category list exists;

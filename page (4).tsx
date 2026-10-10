@@ -1,97 +1,87 @@
 "use client";
 
+import { label } from "@/lib/labels";
 import { useCallback, useEffect, useState } from "react";
 
-type F = {
-  id: string; name: string; region: string; description: string | null; address: string | null;
-  commercialRegNo: string | null; taxNo: string | null;
-  user: { name: string; email: string; phone: string | null };
-  certifications: { id: string; name: string; issuer: string | null; fileUrl: string | null }[];
+type Order = {
+  id: string;
+  number: string;
+  status: string;
+  quantity: number;
+  unitPrice: string;
+  totalPrice: string;
+  factory: { name: string };
+  product: { name: string } | null;
+  shipment: { carrier: string | null; trackingNumber: string | null; deliveredAt: string | null } | null;
 };
 
-export default function AdminPage() {
-  const [rows, setRows] = useState<F[]>([]);
+const STEPS = ["CONFIRMED", "IN_PRODUCTION", "QC", "READY_TO_SHIP", "SHIPPED", "DELIVERED"];
+
+export default function ClientOrdersPage() {
+  const [orders, setOrders] = useState<Order[]>([]);
   const [error, setError] = useState("");
-  const [tool, setTool] = useState("");
-  const [demo, setDemo] = useState<{ id: string; name: string }[]>([]);
 
   const load = useCallback(async () => {
-    const r = await fetch("/api/admin/factories?status=PENDING");
+    const r = await fetch("/api/orders");
     const d = await r.json();
     if (!r.ok) return setError(d.error);
-    setRows(d.factories);
+    setOrders(d.orders);
   }, []);
-  const loadDemo = useCallback(async () => {
-    const r = await fetch("/api/admin/demo-factories");
-    if (r.ok) setDemo((await r.json()).factories);
-  }, []);
-  useEffect(() => { load(); loadDemo(); }, [load, loadDemo]);
 
-  async function syncCategories() {
-    setTool("");
-    const r = await fetch("/api/admin/categories/sync", { method: "POST" });
-    const d = await r.json();
-    setTool(r.ok ? `تم تحديث التصنيفات. العدد الكلي الآن: ${d.total}` : d.error);
-  }
+  useEffect(() => { load(); }, [load]);
 
-  async function deleteDemo() {
-    if (!confirm(`سيتم حذف ${demo.length} مصانع تجريبية نهائياً مع منتجاتها وحساباتها. متابعة؟`)) return;
-    setTool("");
-    const r = await fetch("/api/admin/demo-factories", { method: "POST" });
+  async function confirmDelivery(id: string) {
+    const r = await fetch(`/api/orders/${id}/deliver`, { method: "POST" });
     const d = await r.json();
-    setTool(r.ok ? `تم حذف ${d.deleted} مصنع تجريبي.` : d.error);
-    loadDemo();
-  }
-
-  async function review(id: string, action: "APPROVE" | "REJECT") {
-    const r = await fetch(`/api/admin/factories/${id}`, {
-      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action }),
-    });
-    const d = await r.json();
-    if (!r.ok) return setError(d.error);
+    if (!r.ok) setError(d.error);
     load();
   }
 
   return (
     <div className="mx-auto max-w-4xl p-6">
-      <h1 className="mb-4 text-2xl font-bold">طلبات توثيق المصانع</h1>
-      {error && <p className="text-red-600">{error}</p>}
-      {rows.length === 0 && <p className="text-gray-500">لا توجد مصانع بانتظار المراجعة.</p>}
-      <div className="space-y-3">
-        {rows.map((f) => (
-          <div key={f.id} className="rounded-lg border bg-white p-4">
-            <div className="font-semibold">{f.name} <span className="text-sm font-normal text-gray-500">· {f.region}</span></div>
-            <div className="text-sm text-gray-500">{f.user.name} — {f.user.email} — <span dir="ltr">{f.user.phone}</span></div>
-            <div className="text-sm">السجل: <b dir="ltr">{f.commercialRegNo ?? "—"}</b> · الرقم الضريبي: <b dir="ltr">{f.taxNo ?? "—"}</b></div>
-            <p className="mt-2 text-sm">{f.description}</p>
-            <p className="text-sm text-gray-500">{f.address}</p>
-            <ul className="mt-2 text-sm">
-              {f.certifications.map((c) => (
-                <li key={c.id}>
-                  {c.name}{c.issuer ? ` (${c.issuer})` : ""}{" "}
-                  {c.fileUrl && <a href={c.fileUrl} target="_blank" className="text-brand underline">المستند</a>}
-                </li>
-              ))}
-            </ul>
-            <div className="mt-3 flex gap-2">
-              <button onClick={() => review(f.id, "APPROVE")} className="rounded bg-green-600 px-3 py-1 text-white">اعتماد</button>
-              <button onClick={() => review(f.id, "REJECT")} className="rounded border px-3 py-1">رفض</button>
-            </div>
-          </div>
-        ))}
-      </div>
+      <h1 className="mb-4 text-2xl font-bold">طلباتي</h1>
+      {error && <p className="mb-3 text-red-600">{error}</p>}
 
-      <section className="mt-10 rounded-lg border bg-white p-4">
-        <h2 className="mb-3 font-semibold">أدوات الإدارة</h2>
-        <div className="flex flex-wrap gap-2">
-          <button onClick={syncCategories} className="rounded bg-brand px-4 py-2 text-white">تحديث قائمة التصنيفات</button>
-          {demo.length > 0 && (
-            <button onClick={deleteDemo} className="rounded border border-accent px-4 py-2 text-accent">حذف المصانع التجريبية ({demo.length})</button>
-          )}
-        </div>
-        {demo.length > 0 && <p className="mt-2 text-xs text-gray-500">المصانع التجريبية: {demo.map((d) => d.name).join("، ")}</p>}
-        {tool && <p className="mt-2 text-sm text-brand">{tool}</p>}
-      </section>
+      {orders.map((o) => {
+        const step = STEPS.indexOf(o.status);
+        return (
+          <div key={o.id} className="mb-4 rounded-lg border p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <b>{o.number}</b> · {o.factory.name}
+                <div className="text-sm text-gray-500">
+                  {o.product?.name ?? "مخصص"} × {o.quantity} · الإجمالي {Number(o.totalPrice).toLocaleString("ar-u-nu-latn")}
+                </div>
+              </div>
+              {o.status === "SHIPPED" && (
+                <button className="rounded bg-green-600 px-3 py-2 text-white" onClick={() => confirmDelivery(o.id)}>
+                  تأكيد الاستلام
+                </button>
+              )}
+            </div>
+
+            <div className="mt-3 flex gap-1">
+              {STEPS.map((s, i) => (
+                <div key={s} className="flex-1">
+                  <div className={`h-1.5 rounded ${i <= step ? "bg-brand" : "bg-gray-300"}`} />
+                  <div className={`mt-1 text-[10px] ${i === step ? "font-bold" : "text-gray-500"}`}>
+                    {label(s)}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {o.shipment && (
+              <p className="mt-2 text-sm text-gray-600">
+                تم الشحن{o.shipment.carrier ? ` عبر ${o.shipment.carrier}` : ""}
+                {o.shipment.trackingNumber ? ` · رقم التتبع ${o.shipment.trackingNumber}` : ""}
+                {o.shipment.deliveredAt ? ` · تم التسليم ${new Date(o.shipment.deliveredAt).toLocaleDateString("ar-u-nu-latn")}` : ""}
+              </p>
+            )}
+          </div>
+        );
+      })}
+      {orders.length === 0 && <p className="text-gray-500">لا توجد طلبات بعد.</p>}
     </div>
   );
 }

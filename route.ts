@@ -1,51 +1,17 @@
-import { NextRequest, NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { errorResponse } from "@/lib/guards";
+import { requireRole, errorResponse } from "@/lib/guards";
+import { CATEGORIES } from "@/lib/category-list";
 
-// Public marketplace directory. Filters: q (factory name), category (slug), country (ISO code), region, cert, verified
-export async function GET(request: NextRequest) {
+// Admin: creates any missing categories and refreshes names. Never deletes categories (factories may use them).
+export async function POST() {
   try {
-    const p = request.nextUrl.searchParams;
-    const q = p.get("q")?.trim();
-    const category = p.get("category");
-    const region = p.get("region");
-    const country = p.get("country");
-    const cert = p.get("cert")?.trim();
-    const verified = p.get("verified") === "1";
-
-    const where: Prisma.FactoryWhereInput = { deletedAt: null };
-    if (q) where.name = { contains: q };
-    if (country) where.country = country;
-    if (region) where.region = region;
-    if (verified) where.verification = "VERIFIED";
-    if (category) where.categories = { some: { category: { slug: category } } };
-    if (cert) {
-      where.certifications = {
-        some: { name: { contains: cert } },
-      };
+    await requireRole("ADMIN");
+    for (const [slug, nameAr, nameEn] of CATEGORIES) {
+      await prisma.category.upsert({ where: { slug }, update: { nameAr, nameEn }, create: { slug, nameAr, nameEn } });
     }
-
-    const factories = await prisma.factory.findMany({
-      where,
-      select: {
-        id: true,
-        name: true,
-        country: true,
-        region: true,
-        description: true,
-        logoUrl: true,
-        verification: true,
-        featured: true,
-        categories: { select: { category: { select: { slug: true, nameAr: true, nameEn: true } } } },
-        certifications: { select: { name: true, verified: true } },
-        _count: { select: { products: true } },
-      },
-      orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
-      take: 50,
-    });
-
-    return NextResponse.json({ factories });
+    const total = await prisma.category.count();
+    return NextResponse.json({ synced: CATEGORIES.length, total });
   } catch (error) {
     return errorResponse(error);
   }

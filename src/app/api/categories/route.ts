@@ -7,8 +7,9 @@ export async function GET() {
     const categories = await prisma.category.findMany({
       where: { parentId: null },
       select: { id: true, slug: true, nameAr: true, nameEn: true },
-      orderBy: { nameEn: "asc" },
     });
+    categories.sort((a, b) =>
+      a.slug === "other" ? 1 : b.slug === "other" ? -1 : a.nameAr.localeCompare(b.nameAr, "ar"));
     return NextResponse.json({ categories });
   } catch (error) {
     return errorResponse(error);

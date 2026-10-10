@@ -12,6 +12,8 @@ type F = {
 export default function AdminPage() {
   const [rows, setRows] = useState<F[]>([]);
   const [error, setError] = useState("");
+  const [tool, setTool] = useState("");
+  const [demo, setDemo] = useState<{ id: string; name: string }[]>([]);
 
   const load = useCallback(async () => {
     const r = await fetch("/api/admin/factories?status=PENDING");
@@ -19,7 +21,27 @@ export default function AdminPage() {
     if (!r.ok) return setError(d.error);
     setRows(d.factories);
   }, []);
-  useEffect(() => { load(); }, [load]);
+  const loadDemo = useCallback(async () => {
+    const r = await fetch("/api/admin/demo-factories");
+    if (r.ok) setDemo((await r.json()).factories);
+  }, []);
+  useEffect(() => { load(); loadDemo(); }, [load, loadDemo]);
+
+  async function syncCategories() {
+    setTool("");
+    const r = await fetch("/api/admin/categories/sync", { method: "POST" });
+    const d = await r.json();
+    setTool(r.ok ? `تم تحديث التصنيفات. العدد الكلي الآن: ${d.total}` : d.error);
+  }
+
+  async function deleteDemo() {
+    if (!confirm(`سيتم حذف ${demo.length} مصانع تجريبية نهائياً مع منتجاتها وحساباتها. متابعة؟`)) return;
+    setTool("");
+    const r = await fetch("/api/admin/demo-factories", { method: "POST" });
+    const d = await r.json();
+    setTool(r.ok ? `تم حذف ${d.deleted} مصنع تجريبي.` : d.error);
+    loadDemo();
+  }
 
   async function review(id: string, action: "APPROVE" | "REJECT") {
     const r = await fetch(`/api/admin/factories/${id}`, {
@@ -58,6 +80,18 @@ export default function AdminPage() {
           </div>
         ))}
       </div>
+
+      <section className="mt-10 rounded-lg border bg-white p-4">
+        <h2 className="mb-3 font-semibold">أدوات الإدارة</h2>
+        <div className="flex flex-wrap gap-2">
+          <button onClick={syncCategories} className="rounded bg-brand px-4 py-2 text-white">تحديث قائمة التصنيفات</button>
+          {demo.length > 0 && (
+            <button onClick={deleteDemo} className="rounded border border-accent px-4 py-2 text-accent">حذف المصانع التجريبية ({demo.length})</button>
+          )}
+        </div>
+        {demo.length > 0 && <p className="mt-2 text-xs text-gray-500">المصانع التجريبية: {demo.map((d) => d.name).join("، ")}</p>}
+        {tool && <p className="mt-2 text-sm text-brand">{tool}</p>}
+      </section>
     </div>
   );
 }

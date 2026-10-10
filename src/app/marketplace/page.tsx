@@ -49,32 +49,36 @@ export default function MarketplacePage() {
     <div className="mx-auto max-w-5xl p-6">
       <h1 className="mb-4 text-2xl font-bold">دليل المصانع</h1>
 
-      <div className="mb-3 flex flex-wrap gap-2">
-        <button
-          onClick={() => setF({ ...f, category: "" })}
-          className={`rounded-full border px-3 py-1 ${!f.category ? "bg-brand text-white" : ""}`}
-        >الكل</button>
-        {cats.map((c) => (
-          <button
-            key={c.slug}
-            onClick={() => setF({ ...f, category: c.slug })}
-            className={`rounded-full border px-3 py-1 ${f.category === c.slug ? "bg-brand text-white" : ""}`}
-          >{c.nameAr}</button>
-        ))}
-      </div>
-
-      <div className="mb-6 flex flex-wrap items-center gap-2">
-        <input className={field} placeholder="ابحث عن مصنع…" value={f.q}
-          onChange={(e) => setF({ ...f, q: e.target.value })} />
-        <input className={field} placeholder="المنطقة" value={f.region}
-          onChange={(e) => setF({ ...f, region: e.target.value })} />
-        <input className={field} placeholder="الشهادة (مثل ISO 9001)" value={f.cert}
-          onChange={(e) => setF({ ...f, cert: e.target.value })} />
-        <label className="flex items-center gap-1 text-sm">
-          <input type="checkbox" checked={f.verified}
-            onChange={(e) => setF({ ...f, verified: e.target.checked })} />
-          المصانع الموثّقة فقط
-        </label>
+      <div className="mb-6 rounded-xl bg-white p-4 shadow-sm ring-1 ring-black/5">
+        <div className="grid gap-3 md:grid-cols-2">
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">ابحث باسم المصنع أو التصنيف</label>
+            <input className={`${field} w-full`} placeholder="مثال: أثاث، ألبان، شركة الوادي…" value={f.q}
+              onChange={(e) => setF({ ...f, q: e.target.value })} />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">أو اختر التصنيف</label>
+            <select className={`${field} w-full`} value={f.category} onChange={(e) => setF({ ...f, category: e.target.value })}>
+              <option value="">كل التصنيفات</option>
+              {cats.map((c) => <option key={c.slug} value={c.slug}>{c.nameAr}</option>)}
+            </select>
+          </div>
+        </div>
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <input className={field} placeholder="المنطقة" value={f.region}
+            onChange={(e) => setF({ ...f, region: e.target.value })} />
+          <input className={field} placeholder="الشهادة (مثل ISO 9001)" value={f.cert}
+            onChange={(e) => setF({ ...f, cert: e.target.value })} />
+          <label className="flex items-center gap-1 text-sm">
+            <input type="checkbox" checked={f.verified}
+              onChange={(e) => setF({ ...f, verified: e.target.checked })} />
+            المصانع الموثّقة فقط
+          </label>
+          {(f.q || f.category || f.region || f.cert || f.verified) && (
+            <button type="button" className="ms-auto text-sm text-accent underline"
+              onClick={() => setF({ q: "", category: "", region: "", cert: "", verified: false })}>مسح الفلاتر</button>
+          )}
+        </div>
       </div>
 
       {loading ? <p>جارٍ التحميل…</p> : (
@@ -102,7 +106,7 @@ export default function MarketplacePage() {
               </div>
             </Link>
           ))}
-          {factories.length === 0 && <p className="text-gray-500">لا توجد مصانع مطابقة.</p>}
+          {factories.length === 0 && <p className="text-gray-500">لا توجد مصانع مطابقة. جرّب تغيير البحث أو التصنيف.</p>}
         </div>
       )}
     </div>

@@ -14,7 +14,15 @@ export async function GET(request: NextRequest) {
     const verified = p.get("verified") === "1";
 
     const where: Prisma.FactoryWhereInput = { deletedAt: null };
-    if (q) where.name = { contains: q, mode: "insensitive" };
+    if (q) {
+      where.OR = [
+        { name: { contains: q, mode: "insensitive" } },
+        { categories: { some: { category: { OR: [
+          { nameAr: { contains: q, mode: "insensitive" } },
+          { nameEn: { contains: q, mode: "insensitive" } },
+        ] } } } },
+      ];
+    }
     if (region) where.region = region;
     if (verified) where.verification = "VERIFIED";
     if (category) where.categories = { some: { category: { slug: category } } };

@@ -1,97 +1,92 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { useState } from "react";
+import PhoneInput from "@/components/PhoneInput";
+import { buildPhone, DEFAULT_COUNTRY } from "@/lib/countries";
 
-type F = {
-  id: string; name: string; region: string; description: string | null; address: string | null;
-  commercialRegNo: string | null; taxNo: string | null;
-  user: { name: string; email: string; phone: string | null };
-  certifications: { id: string; name: string; issuer: string | null; fileUrl: string | null }[];
-};
-
-export default function AdminPage() {
-  const [rows, setRows] = useState<F[]>([]);
+export default function RegisterPage() {
+  const [role, setRole] = useState<"CLIENT" | "FACTORY">("CLIENT");
+  const [f, setF] = useState({ name: "", email: "", password: "", phone: "", factoryName: "", description: "", region: "", commercialRegNo: "", taxNo: "", companyName: "", companyCity: "", companyRegNo: "", companyTaxNo: "" });
+  const [country, setCountry] = useState(DEFAULT_COUNTRY);
   const [error, setError] = useState("");
-  const [tool, setTool] = useState("");
-  const [demo, setDemo] = useState<{ id: string; name: string }[]>([]);
+  const [busy, setBusy] = useState(false);
 
-  const load = useCallback(async () => {
-    const r = await fetch("/api/admin/factories?status=PENDING");
-    const d = await r.json();
-    if (!r.ok) return setError(d.error);
-    setRows(d.factories);
-  }, []);
-  const loadDemo = useCallback(async () => {
-    const r = await fetch("/api/admin/demo-factories");
-    if (r.ok) setDemo((await r.json()).factories);
-  }, []);
-  useEffect(() => { load(); loadDemo(); }, [load, loadDemo]);
+  const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    setF({ ...f, [k]: e.target.value });
 
-  async function syncCategories() {
-    setTool("");
-    const r = await fetch("/api/admin/categories/sync", { method: "POST" });
-    const d = await r.json();
-    setTool(r.ok ? `تم تحديث التصنيفات. العدد الكلي الآن: ${d.total}` : d.error);
-  }
-
-  async function deleteDemo() {
-    if (!confirm(`سيتم حذف ${demo.length} مصانع تجريبية نهائياً مع منتجاتها وحساباتها. متابعة؟`)) return;
-    setTool("");
-    const r = await fetch("/api/admin/demo-factories", { method: "POST" });
-    const d = await r.json();
-    setTool(r.ok ? `تم حذف ${d.deleted} مصنع تجريبي.` : d.error);
-    loadDemo();
-  }
-
-  async function review(id: string, action: "APPROVE" | "REJECT") {
-    const r = await fetch(`/api/admin/factories/${id}`, {
-      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action }),
+  async function submit() {
+    setBusy(true);
+    setError("");
+    const r = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...f, phone: buildPhone(country, f.phone), country, role }),
     });
     const d = await r.json();
+    setBusy(false);
     if (!r.ok) return setError(d.error);
-    load();
+    window.location.href = "/verify-email";
   }
 
+  const field = "w-full rounded border p-2";
+  const tab = (r: "CLIENT" | "FACTORY") =>
+    `flex-1 rounded border p-2 ${role === r ? "bg-brand text-white" : ""}`;
+
   return (
-    <div className="mx-auto max-w-4xl p-6">
-      <h1 className="mb-4 text-2xl font-bold">طلبات توثيق المصانع</h1>
-      {error && <p className="text-red-600">{error}</p>}
-      {rows.length === 0 && <p className="text-gray-500">لا توجد مصانع بانتظار المراجعة.</p>}
-      <div className="space-y-3">
-        {rows.map((f) => (
-          <div key={f.id} className="rounded-lg border bg-white p-4">
-            <div className="font-semibold">{f.name} <span className="text-sm font-normal text-gray-500">· {f.region}</span></div>
-            <div className="text-sm text-gray-500">{f.user.name} — {f.user.email} — <span dir="ltr">{f.user.phone}</span></div>
-            <div className="text-sm">السجل: <b dir="ltr">{f.commercialRegNo ?? "—"}</b> · الرقم الضريبي: <b dir="ltr">{f.taxNo ?? "—"}</b></div>
-            <p className="mt-2 text-sm">{f.description}</p>
-            <p className="text-sm text-gray-500">{f.address}</p>
-            <ul className="mt-2 text-sm">
-              {f.certifications.map((c) => (
-                <li key={c.id}>
-                  {c.name}{c.issuer ? ` (${c.issuer})` : ""}{" "}
-                  {c.fileUrl && <a href={c.fileUrl} target="_blank" className="text-brand underline">المستند</a>}
-                </li>
-              ))}
-            </ul>
-            <div className="mt-3 flex gap-2">
-              <button onClick={() => review(f.id, "APPROVE")} className="rounded bg-green-600 px-3 py-1 text-white">اعتماد</button>
-              <button onClick={() => review(f.id, "REJECT")} className="rounded border px-3 py-1">رفض</button>
-            </div>
-          </div>
-        ))}
+    <div className="mx-auto mt-12 max-w-md space-y-3 p-6">
+      <Image src="/emblem.png" alt="" width={96} height={96} className="mx-auto h-20 w-20" />
+      <h1 className="text-center text-2xl font-bold text-brand">إنشاء حساب</h1>
+
+      <div className="flex gap-2">
+        <button className={tab("CLIENT")} onClick={() => setRole("CLIENT")}>أنا مشترٍ</button>
+        <button className={tab("FACTORY")} onClick={() => setRole("FACTORY")}>أنا مصنع</button>
       </div>
 
-      <section className="mt-10 rounded-lg border bg-white p-4">
-        <h2 className="mb-3 font-semibold">أدوات الإدارة</h2>
-        <div className="flex flex-wrap gap-2">
-          <button onClick={syncCategories} className="rounded bg-brand px-4 py-2 text-white">تحديث قائمة التصنيفات</button>
-          {demo.length > 0 && (
-            <button onClick={deleteDemo} className="rounded border border-accent px-4 py-2 text-accent">حذف المصانع التجريبية ({demo.length})</button>
-          )}
+      <input className={field} placeholder="اسمك" value={f.name} onChange={set("name")} />
+      <input className={field} type="email" placeholder="البريد الإلكتروني" value={f.email} onChange={set("email")} />
+      <input className={field} type="password" placeholder="كلمة المرور (8 أحرف على الأقل)" value={f.password}
+        onChange={set("password")} />
+      <div>
+        <label className="mb-1 block text-sm font-medium text-gray-700">رقم الهاتف (اختر الدولة من القائمة)</label>
+        <PhoneInput country={country} onCountry={setCountry} value={f.phone} onChange={(v) => setF({ ...f, phone: v })} />
+        <p className="mt-1 text-xs text-gray-500">تُحدَّد دولتك من رمز الدولة، ويُكتب الرقم بدون الصفر الأول (مثل 791234567).</p>
+      </div>
+
+      {role === "CLIENT" && (
+        <div className="space-y-3 rounded-lg border bg-white p-3">
+          <p className="text-sm font-semibold text-brand">بيانات الشركة</p>
+          <input className={field} placeholder="اسم الشركة" value={f.companyName} onChange={set("companyName")} />
+          <input className={field} placeholder="المدينة (مثل عمّان)" value={f.companyCity} onChange={set("companyCity")} />
+          <input className={field} dir="ltr" placeholder="رقم السجل التجاري" value={f.companyRegNo} onChange={set("companyRegNo")} />
+          <input className={field} dir="ltr" placeholder="الرقم الضريبي (اختياري)" value={f.companyTaxNo} onChange={set("companyTaxNo")} />
+          <p className="text-xs text-gray-500">تظهر بيانات شركتك للمصانع التي تطلب منها عروض الأسعار، وتساعدهم على الوثوق بطلبك.</p>
         </div>
-        {demo.length > 0 && <p className="mt-2 text-xs text-gray-500">المصانع التجريبية: {demo.map((d) => d.name).join("، ")}</p>}
-        {tool && <p className="mt-2 text-sm text-brand">{tool}</p>}
-      </section>
+      )}
+
+      <textarea className={field} rows={4} maxLength={1000}
+        placeholder={role === "FACTORY" ? "وصف المصنع: ماذا تصنّع؟ الطاقة الإنتاجية، الخبرة، الأسواق… (20 حرفاً على الأقل)" : "نبذة عنك أو عن شركتك: نشاطك التجاري، وما الذي تشتريه عادةً… (20 حرفاً على الأقل)"}
+        value={f.description} onChange={set("description")} />
+      <p className="-mt-2 text-end text-xs text-gray-400">{f.description.trim().length} / 1000</p>
+
+      {role === "FACTORY" && (
+        <>
+          <input className={field} placeholder="اسم المصنع" value={f.factoryName} onChange={set("factoryName")} />
+          <input className={field} placeholder="المدينة / المنطقة (مثل عمّان)" value={f.region} onChange={set("region")} />
+          <input className={field} dir="ltr" placeholder="رقم السجل التجاري / الصناعي" value={f.commercialRegNo} onChange={set("commercialRegNo")} />
+          <input className={field} dir="ltr" placeholder="الرقم الضريبي" value={f.taxNo} onChange={set("taxNo")} />
+          <p className="text-xs text-gray-500">يجب أن يطابق اسم المصنع الاسم الرسمي في السجل؛ ولا يُسمح بأكثر من حساب لنفس السجل.</p>
+        </>
+      )}
+
+      {error && <p className="text-sm text-red-600">{error}</p>}
+      <button disabled={busy || !f.name || !f.email || !f.password || !f.phone || f.description.trim().length < 20 || (role === "CLIENT" && (!f.companyName || !f.companyCity || !f.companyRegNo)) || (role === "FACTORY" && (!f.factoryName || !f.region || !f.commercialRegNo || !f.taxNo))} onClick={submit}
+        className="w-full rounded bg-brand p-2 text-white disabled:opacity-50">إنشاء الحساب</button>
+      <p className="text-center text-xs text-gray-500">بإنشاء حساب فإنك توافق على <Link href="/terms" className="text-brand underline">الشروط والأحكام</Link> و<Link href="/privacy" className="text-brand underline">سياسة الخصوصية</Link>.</p>
+      <p className="text-sm text-gray-500">
+        لديك حساب؟ <Link href="/login" className="text-brand">سجّل الدخول</Link>
+      </p>
     </div>
   );
 }

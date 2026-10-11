@@ -52,6 +52,8 @@ export async function POST(request: NextRequest) {
     const taxNo = role === "FACTORY" ? normalizeTaxNo(b.taxNo) : null;
 
     const passwordHash = await hashPassword(password);
+    // Set REQUIRE_EMAIL_VERIFICATION=false to let new accounts in immediately (default: verification required).
+    const requireVerification = process.env.REQUIRE_EMAIL_VERIFICATION !== "false";
 
     try {
       const user = await prisma.user.create({
@@ -62,6 +64,7 @@ export async function POST(request: NextRequest) {
           role,
           phone,
           country: country.code,
+          emailVerifiedAt: requireVerification ? null : new Date(),
           ...(role === "CLIENT" ? { description, companyName, companyCity, companyRegNo, companyTaxNo } : {}),
           ...(role === "FACTORY"
             ? { factory: { create: { name: factoryName, description, country: country.code, region, commercialRegNo, taxNo } } }
@@ -69,10 +72,12 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      await createSession({ id: user.id, role: user.role, name: user.name, verified: false });
-      try { await issueVerificationCode(user.id, user.email); } catch (e) { console.error("verification email failed", e); }
+      await createSession({ id: user.id, role: user.role, name: user.name, verified: !requireVerification });
+      if (requireVerification) {
+        try { await issueVerificationCode(user.id, user.email); } catch (e) { console.error("verification email failed", e); }
+      }
       return NextResponse.json(
-        { user: { id: user.id, name: user.name, role: user.role, verified: false } },
+        { user: { id: user.id, name: user.name, role: user.role, verified: !requireVerification } },
         { status: 201 }
       );
     } catch (e) {

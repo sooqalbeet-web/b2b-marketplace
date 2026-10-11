@@ -12,6 +12,7 @@ export default function RegisterPage() {
   const [country, setCountry] = useState(DEFAULT_COUNTRY);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState<{ role: string; verified: boolean } | null>(null);
 
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setF({ ...f, [k]: e.target.value });
@@ -27,15 +28,30 @@ export default function RegisterPage() {
     const d = await r.json();
     setBusy(false);
     if (!r.ok) return setError(d.error);
-    window.location.href = "/verify-email";
+    const dest = !d.user.verified ? "/verify-email" : d.user.role === "FACTORY" ? "/factory/products" : "/marketplace";
+    setDone({ role: d.user.role, verified: d.user.verified });
+    setTimeout(() => { window.location.href = dest; }, 2200);
   }
 
   const field = "w-full rounded border p-2";
   const tab = (r: "CLIENT" | "FACTORY") =>
     `flex-1 rounded border p-2 ${role === r ? "bg-brand text-white" : ""}`;
 
+  const doneText = !done ? "" : !done.verified
+    ? "أرسلنا رمز التحقق إلى بريدك الإلكتروني، وننقلك الآن لإدخاله."
+    : done.role === "FACTORY" ? "ننقلك الآن إلى صفحة المصنع لتبدأ بإضافة منتجاتك." : "ننقلك الآن إلى دليل المصانع.";
+
   return (
     <div className="mx-auto mt-12 max-w-md space-y-3 p-6">
+      {done && (
+        <div role="status" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-8 text-center shadow-2xl">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-4xl text-green-600">✓</div>
+            <h2 className="mt-4 text-xl font-bold text-gray-900">تم التسجيل بنجاح</h2>
+            <p className="mt-2 text-sm leading-7 text-gray-600">{doneText}</p>
+          </div>
+        </div>
+      )}
       <Image src="/emblem.png" alt="" width={96} height={96} className="mx-auto h-20 w-20" />
       <h1 className="text-center text-2xl font-bold text-brand">إنشاء حساب</h1>
 

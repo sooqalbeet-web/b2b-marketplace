@@ -13,7 +13,7 @@ export default function VerifyEmailPage() {
   const started = useRef(false);
 
   const go = (role: string) => {
-    window.location.href = role === "FACTORY" ? "/factory/dashboard" : role === "ADMIN" ? "/admin" : "/marketplace";
+    window.location.href = role === "FACTORY" ? "/factory/products" : role === "ADMIN" ? "/admin" : "/marketplace";
   };
 
   const send = useCallback(async (channel: "email" | "whatsapp" = "email") => {
@@ -53,7 +53,9 @@ export default function VerifyEmailPage() {
     const d = await r.json();
     setBusy(false);
     if (!r.ok) return setError(d.error);
-    go(d.role);
+    setBusy(true);
+    setInfo("✓ تم تأكيد حسابك بنجاح، ننقلك الآن…");
+    setTimeout(() => go(d.role), 1200);
   }
 
   return (

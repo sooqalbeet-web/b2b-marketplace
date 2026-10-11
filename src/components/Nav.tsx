@@ -10,7 +10,7 @@ type User = { id: string; name: string; role: "CLIENT" | "FACTORY" | "ADMIN"; ve
 const LINKS: Record<string, [string, string][]> = {
   CLIENT: [["السوق", "/marketplace"], ["عروض أسعاري", "/quotations"], ["طلباتي", "/orders"], ["الرسائل", "/messages"]],
   FACTORY: [["لوحة التحكم", "/factory/dashboard"], ["عروض الأسعار", "/factory/quotations"], ["الطلبات", "/factory/orders"], ["المنتجات", "/factory/products"], ["المخزون", "/factory/inventory"], ["الجودة", "/factory/quality"], ["الرسائل", "/messages"], ["الملف", "/factory/profile"]],
-  ADMIN: [["التوثيق", "/admin"], ["السوق", "/marketplace"]],
+  ADMIN: [["لوحة الإدارة", "/admin"], ["السوق", "/marketplace"]],
 };
 
 export default function Nav() {

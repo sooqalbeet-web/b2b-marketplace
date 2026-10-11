@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+/* Brand colors taken from the SOOQ AL BEET logo */
+@theme {
+  --color-brand: #13545e;        /* teal */
+  --color-brand-dark: #0d3d45;
+  --color-brand-light: #e6f0f1;
+  --color-accent: #780606;       /* maroon */
+  --color-accent-dark: #570404;
+  --color-accent-light: #f6e8e8;
+  --font-sans: "Cairo", "Segoe UI", Tahoma, "Noto Sans Arabic", Arial, sans-serif;
+}
+
+@layer base {
+  html { scroll-behavior: smooth; }
+  body {
+    font-size: 16px;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+    background-color: #f6f8f9;
+  }
+  h1, h2, h3 { line-height: 1.4; }
+  h1 { letter-spacing: -0.01em; }
+
+  a, button { transition: color .15s, background-color .15s, border-color .15s, box-shadow .15s; }
+  button:not(:disabled) { cursor: pointer; }
+
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  select,
+  textarea {
+    border-radius: .5rem;
+    border: 1px solid #d1d5db;
+    background-color: #fff;
+    padding: .55rem .75rem;
+    font: inherit;
+  }
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
+  select:focus,
+  textarea:focus {
+    outline: none;
+    border-color: var(--color-brand);
+    box-shadow: 0 0 0 3px rgb(19 84 94 / .15);
+  }
+  input::placeholder, textarea::placeholder { color: #9ca3af; }
+
+  table { border-collapse: collapse; }
+  th { font-weight: 600; }
+  th, td { padding: .65rem .5rem; }
+  tbody tr:hover { background-color: #f9fafb; }
+
+  ::selection { background: var(--color-brand); color: #fff; }
+}

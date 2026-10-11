@@ -1,0 +1,55 @@
+// Consumer-industry sectors. [slug, Arabic name, English name]. Slugs are permanent (factories link to them);
+// names can be edited here and re-applied with "تحديث قائمة التصنيفات" in the admin page.
+export const CATEGORIES: [string, string, string][] = [
+  // الغذاء والمشروبات
+  ["food-beverages", "أغذية ومشروبات", "Food & Beverages"],
+  ["dairy", "ألبان ومنتجاتها", "Dairy Products"],
+  ["bakery-confectionery", "مخبوزات وحلويات", "Bakery & Confectionery"],
+  ["meat-poultry-seafood", "لحوم ودواجن ومأكولات بحرية", "Meat, Poultry & Seafood"],
+  ["canned-preserved", "معلبات ومحفوظات", "Canned & Preserved Food"],
+  ["oils-spices-dry-goods", "زيوت وبهارات ومواد غذائية جافة", "Oils, Spices & Dry Goods"],
+  ["beverages", "مشروبات وعصائر ومياه", "Beverages, Juices & Water"],
+  ["agri-products", "منتجات زراعية", "Agricultural Products"],
+  // الأزياء والمنسوجات
+  ["textiles", "منسوجات وأقمشة", "Textiles & Fabrics"],
+  ["apparel", "ملابس جاهزة", "Apparel & Garments"],
+  ["footwear", "أحذية", "Footwear"],
+  ["leather-bags", "جلود وحقائب", "Leather Goods & Bags"],
+  ["home-textiles", "مفروشات ومنسوجات منزلية", "Home Textiles & Bedding"],
+  ["carpets-rugs", "سجاد وموكيت", "Carpets & Rugs"],
+  ["jewelry-accessories", "مجوهرات وإكسسوارات", "Jewelry & Accessories"],
+  // المنزل والأجهزة
+  ["furniture", "أثاث", "Furniture"],
+  ["home-appliances", "أجهزة منزلية", "Home Appliances"],
+  ["electronics", "إلكترونيات", "Electronics"],
+  ["lighting-electrical", "إضاءة ومعدات كهربائية", "Lighting & Electrical Equipment"],
+  ["kitchenware-housewares", "أدوات مطبخ ومستلزمات منزلية", "Kitchenware & Housewares"],
+  ["glass-ceramics", "زجاج وخزف وسيراميك", "Glass & Ceramics"],
+  ["cleaning-detergents", "منظفات ومواد تنظيف", "Cleaning & Detergents"],
+  ["paper-tissue", "ورق ومنتجات ورقية ومحارم", "Paper & Tissue Products"],
+  // العناية والصحة
+  ["cosmetics-personal-care", "مستحضرات تجميل وعناية شخصية", "Cosmetics & Personal Care"],
+  ["perfumes", "عطور وبخور", "Perfumes & Fragrances"],
+  ["pharma-medical", "أدوية ومستلزمات طبية", "Pharmaceuticals & Medical Supplies"],
+  ["supplements", "مكملات غذائية", "Dietary Supplements"],
+  ["baby-products", "منتجات الأطفال والرضّع", "Baby Products"],
+  // الترفيه والأدوات
+  ["toys-games", "ألعاب", "Toys & Games"],
+  ["stationery-office", "قرطاسية ومستلزمات مكتبية", "Stationery & Office Supplies"],
+  ["sports-outdoor", "مستلزمات رياضية ورحلات", "Sports & Outdoor"],
+  ["pet-products", "مستلزمات الحيوانات الأليفة", "Pet Products"],
+  ["gifts-crafts", "هدايا وحرف يدوية", "Gifts & Handicrafts"],
+  ["printing-publishing", "طباعة ونشر", "Printing & Publishing"],
+  // الصناعات الداعمة
+  ["plastics", "بلاستيك ومنتجاته", "Plastic Products"],
+  ["packaging", "تغليف", "Packaging"],
+  ["building", "مواد بناء", "Building Materials"],
+  ["paints-chemicals", "دهانات وكيماويات", "Paints & Chemicals"],
+  ["metals-steel", "معادن وحديد وصلب", "Metals & Steel"],
+  ["machinery", "آلات ومعدات", "Machinery & Equipment"],
+  ["tools-hardware", "عدد وأدوات ومعدات يدوية", "Tools & Hardware"],
+  ["auto-parts", "قطع غيار سيارات وإطارات", "Auto Parts & Tires"],
+  ["agri-inputs", "أسمدة ومستلزمات زراعية", "Fertilizers & Agricultural Inputs"],
+  ["solar-batteries", "طاقة شمسية وبطاريات", "Solar Energy & Batteries"],
+  ["other", "أخرى", "Other"],
+];

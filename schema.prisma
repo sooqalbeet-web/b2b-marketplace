@@ -80,6 +80,10 @@ model User {
   phone        String?
   country      String?
   description  String? @db.Text
+  companyName  String?
+  companyCity  String?
+  companyRegNo String?
+  companyTaxNo String?
   createdAt    DateTime @default(now())
   deletedAt    DateTime?
   emailVerifiedAt DateTime?

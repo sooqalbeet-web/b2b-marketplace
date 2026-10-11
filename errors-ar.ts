@@ -88,6 +88,7 @@ const M: Record<string, string> = {
   "Could not send the WhatsApp message. Try again later.": "تعذّر إرسال رسالة واتساب. حاول لاحقاً أو استخدم البريد الإلكتروني.",
   "WhatsApp verification is not available.": "التحقق عبر واتساب غير متاح حالياً.",
   "No phone number on this account.": "لا يوجد رقم هاتف مسجّل لهذا الحساب.",
+  "Company name and city are required.": "اسم الشركة والمدينة مطلوبان.",
   "Invalid country.": "الدولة غير صالحة.",
   "Phone number does not match the selected country.": "رقم الهاتف لا يطابق رمز الدولة المختارة.",
   "Description is required (20 to 1000 characters).": "الوصف مطلوب (من 20 إلى 1000 حرف).",

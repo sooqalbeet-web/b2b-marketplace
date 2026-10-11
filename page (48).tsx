@@ -8,7 +8,7 @@ import { buildPhone, DEFAULT_COUNTRY } from "@/lib/countries";
 
 export default function RegisterPage() {
   const [role, setRole] = useState<"CLIENT" | "FACTORY">("CLIENT");
-  const [f, setF] = useState({ name: "", email: "", password: "", phone: "", factoryName: "", description: "", region: "", commercialRegNo: "", taxNo: "" });
+  const [f, setF] = useState({ name: "", email: "", password: "", phone: "", factoryName: "", description: "", region: "", commercialRegNo: "", taxNo: "", companyName: "", companyCity: "", companyRegNo: "", companyTaxNo: "" });
   const [country, setCountry] = useState(DEFAULT_COUNTRY);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -54,6 +54,17 @@ export default function RegisterPage() {
         <p className="mt-1 text-xs text-gray-500">تُحدَّد دولتك من رمز الدولة، ويُكتب الرقم بدون الصفر الأول (مثل 791234567).</p>
       </div>
 
+      {role === "CLIENT" && (
+        <div className="space-y-3 rounded-lg border bg-white p-3">
+          <p className="text-sm font-semibold text-brand">بيانات الشركة</p>
+          <input className={field} placeholder="اسم الشركة" value={f.companyName} onChange={set("companyName")} />
+          <input className={field} placeholder="المدينة (مثل عمّان)" value={f.companyCity} onChange={set("companyCity")} />
+          <input className={field} dir="ltr" placeholder="رقم السجل التجاري" value={f.companyRegNo} onChange={set("companyRegNo")} />
+          <input className={field} dir="ltr" placeholder="الرقم الضريبي (اختياري)" value={f.companyTaxNo} onChange={set("companyTaxNo")} />
+          <p className="text-xs text-gray-500">تظهر بيانات شركتك للمصانع التي تطلب منها عروض الأسعار، وتساعدهم على الوثوق بطلبك.</p>
+        </div>
+      )}
+
       <textarea className={field} rows={4} maxLength={1000}
         placeholder={role === "FACTORY" ? "وصف المصنع: ماذا تصنّع؟ الطاقة الإنتاجية، الخبرة، الأسواق… (20 حرفاً على الأقل)" : "نبذة عنك أو عن شركتك: نشاطك التجاري، وما الذي تشتريه عادةً… (20 حرفاً على الأقل)"}
         value={f.description} onChange={set("description")} />
@@ -70,7 +81,7 @@ export default function RegisterPage() {
       )}
 
       {error && <p className="text-sm text-red-600">{error}</p>}
-      <button disabled={busy || !f.name || !f.email || !f.password || !f.phone || f.description.trim().length < 20 || (role === "FACTORY" && (!f.factoryName || !f.region || !f.commercialRegNo || !f.taxNo))} onClick={submit}
+      <button disabled={busy || !f.name || !f.email || !f.password || !f.phone || f.description.trim().length < 20 || (role === "CLIENT" && (!f.companyName || !f.companyCity || !f.companyRegNo)) || (role === "FACTORY" && (!f.factoryName || !f.region || !f.commercialRegNo || !f.taxNo))} onClick={submit}
         className="w-full rounded bg-brand p-2 text-white disabled:opacity-50">إنشاء الحساب</button>
       <p className="text-center text-xs text-gray-500">بإنشاء حساب فإنك توافق على <Link href="/terms" className="text-brand underline">الشروط والأحكام</Link> و<Link href="/privacy" className="text-brand underline">سياسة الخصوصية</Link>.</p>
       <p className="text-sm text-gray-500">

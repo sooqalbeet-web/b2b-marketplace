@@ -26,7 +26,7 @@ type Q = {
   targetPrice: string | null;
   product: { name: string; sku: string } | null;
   factory: { name: string; region: string };
-  client: { name: string; country: string | null; description: string | null };
+  client: { name: string; country: string | null; description: string | null; companyName: string | null; companyCity: string | null };
   offers: Offer[];
   order: { id: string; number: string } | null;
 };
@@ -101,7 +101,7 @@ export default function NegotiationRoom() {
         <span className="rounded-full border px-3 py-1 text-sm">{label(q.status)}</span>
       </div>
 
-      {party === "FACTORY" && (q.client.country || q.client.description) && (
+      {party === "FACTORY" && (q.client.country || q.client.description || q.client.companyName) && (
         <section className="mb-4 rounded-lg border-s-4 border-brand bg-white p-3 text-sm">
           <h2 className="mb-1 flex items-center gap-2 font-semibold">
             عن المشتري
@@ -113,6 +113,9 @@ export default function NegotiationRoom() {
               </span>
             )}
           </h2>
+          {q.client.companyName && (
+            <p className="font-medium text-gray-900">{q.client.companyName}{q.client.companyCity ? ` · ${q.client.companyCity}` : ""}</p>
+          )}
           {q.client.description && <p className="whitespace-pre-line text-gray-700">{q.client.description}</p>}
         </section>
       )}

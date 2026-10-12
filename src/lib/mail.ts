@@ -1,8 +1,19 @@
-import nodemailer from "nodemailer";
+import { createTransport } from "nodemailer";
 
 type Mail = { to: string; subject: string; text: string; html: string };
 
-let transporter: ReturnType<typeof nodemailer.createTransport> | null = null;
+const buildTransporter = () => {
+  const port = Number(process.env.SMTP_PORT ?? 587);
+  return createTransport({
+    host: process.env.SMTP_HOST,
+    port,
+    secure: port === 465,
+    auth: process.env.SMTP_USER ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS } : undefined,
+  });
+};
+
+// The type is inferred from buildTransporter, so it does not depend on the nodemailer typings.
+let transporter: ReturnType<typeof buildTransporter> | null = null;
 
 export async function sendMail(m: Mail) {
   if (!process.env.SMTP_HOST) {
@@ -10,11 +21,6 @@ export async function sendMail(m: Mail) {
     console.log(`\n[DEV MAIL] to: ${m.to}\nsubject: ${m.subject}\n${m.text}\n`);
     return;
   }
-  transporter ??= nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT ?? 587),
-    secure: Number(process.env.SMTP_PORT ?? 587) === 465,
-    auth: process.env.SMTP_USER ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS } : undefined,
-  });
+  transporter ??= buildTransporter();
   await transporter.sendMail({ from: process.env.MAIL_FROM ?? "no-reply@sooqalbeet.com", ...m });
 }

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { countryByCode, flagUrl } from "@/lib/countries";
 
-type Product = { id: string; name: string; sku: string; unit: string; moq: number; leadTimeDays: number | null };
+type Product = { id: string; name: string; sku: string; unit: string; moq: number; leadTimeDays: number | null; imageUrls: string[] | null };
 type Factory = {
   id: string;
   name: string;
@@ -128,6 +128,10 @@ export default function FactoryProfilePage() {
           {factory.products.map((p) => (
             <button key={p.id} onClick={() => setForm({ ...form, productId: p.id, quantity: String(p.moq) })}
               className={`rounded border p-3 text-start ${form.productId === p.id ? "border-brand" : ""}`}>
+              {p.imageUrls?.[0] && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={p.imageUrls[0]} alt="" className="mb-2 h-32 w-full rounded object-cover" />
+              )}
               <b>{p.name}</b>
               <div className="text-sm text-gray-500">
                 {p.sku} · الحد الأدنى {p.moq} {p.unit}{p.leadTimeDays ? ` · مدة التجهيز ${p.leadTimeDays} يوم` : ""}
@@ -147,8 +151,11 @@ export default function FactoryProfilePage() {
         <div className="grid grid-cols-2 gap-2">
           <input className={field} type="number" placeholder="سعر الوحدة المستهدف (اختياري)" value={form.targetPrice}
             onChange={(e) => setForm({ ...form, targetPrice: e.target.value })} />
-          <input className={field} type="date" value={form.deliveryDate}
-            onChange={(e) => setForm({ ...form, deliveryDate: e.target.value })} />
+          <label className="block text-sm text-gray-600">
+            <span className="mb-1 block">تاريخ التسليم المطلوب (اختياري)</span>
+            <input className={field} type="date" value={form.deliveryDate}
+              onChange={(e) => setForm({ ...form, deliveryDate: e.target.value })} />
+          </label>
         </div>
         {error && <p className="text-red-600">{error}</p>}
         <button disabled={busy || !form.quantity} onClick={requestQuotation}

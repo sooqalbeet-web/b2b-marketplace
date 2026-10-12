@@ -142,9 +142,15 @@ export default function FactoryProfilePage() {
         <div className="grid gap-2 pt-2 sm:grid-cols-2">
           <input className={field} placeholder="الاسم (مثل ISO 9001)" value={cert.name} onChange={(e) => setCert({ ...cert, name: e.target.value })} />
           <input className={field} placeholder="الجهة المانحة" value={cert.issuer} onChange={(e) => setCert({ ...cert, issuer: e.target.value })} />
-          <input className={field} type="date" value={cert.expiresAt} onChange={(e) => setCert({ ...cert, expiresAt: e.target.value })} />
-          <input type="file" accept="application/pdf,image/png,image/jpeg"
-            onChange={(e) => pick(e.target.files?.[0], (url) => setCert({ ...cert, fileUrl: url }))} />
+          <label className="block text-sm text-gray-600">
+            <span className="mb-1 block">تاريخ انتهاء الشهادة (اختياري)</span>
+            <input className={field} type="date" value={cert.expiresAt} onChange={(e) => setCert({ ...cert, expiresAt: e.target.value })} />
+          </label>
+          <label className="block text-sm text-gray-600">
+            <span className="mb-1 block">ملف الشهادة (PDF أو صورة)</span>
+            <input type="file" accept="application/pdf,image/png,image/jpeg"
+              onChange={(e) => pick(e.target.files?.[0], (url) => setCert({ ...cert, fileUrl: url }))} />
+          </label>
         </div>
         {cert.fileUrl && <p className="text-xs text-gray-500">تم إرفاق الملف.</p>}
         <button disabled={!cert.name} className="rounded border border-brand px-4 py-2 text-brand disabled:opacity-50"

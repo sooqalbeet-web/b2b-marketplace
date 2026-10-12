@@ -41,6 +41,8 @@
     border-color: var(--color-brand);
     box-shadow: 0 0 0 3px rgb(19 84 94 / .15);
   }
+  /* Date fields: keep the browser's date text left-to-right so it is not displayed reversed inside the RTL page */
+  input[type="date"] { direction: ltr; text-align: right; }
   input::placeholder, textarea::placeholder { color: #9ca3af; }
 
   table { border-collapse: collapse; }

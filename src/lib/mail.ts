@@ -2,7 +2,7 @@ import nodemailer from "nodemailer";
 
 type Mail = { to: string; subject: string; text: string; html: string };
 
-let transporter: nodemailer.Transporter | null = null;
+let transporter: ReturnType<typeof nodemailer.createTransport> | null = null;
 
 export async function sendMail(m: Mail) {
   if (!process.env.SMTP_HOST) {

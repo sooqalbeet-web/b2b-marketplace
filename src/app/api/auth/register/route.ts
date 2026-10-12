@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     const password = String(b.password ?? "");
     const role = b.role;
 
-    if (!EMAIL.test(email)) throw new HttpError(400, "Invalid email.");
+    if (email.length > 254 || !EMAIL.test(email)) throw new HttpError(400, "Invalid email.");
     if (!name) throw new HttpError(400, "Name is required.");
     if (password.length < 8) throw new HttpError(400, "Password must be at least 8 characters.");
     if (role !== "CLIENT" && role !== "FACTORY") throw new HttpError(400, "Invalid account type.");

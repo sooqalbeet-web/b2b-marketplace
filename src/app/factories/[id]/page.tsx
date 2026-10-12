@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { countryByCode, flagUrl } from "@/lib/countries";
+import DateField from "@/components/DateField";
 
 type Product = { id: string; name: string; sku: string; unit: string; moq: number; leadTimeDays: number | null; imageUrls: string[] | null };
 type Factory = {
@@ -153,8 +154,7 @@ export default function FactoryProfilePage() {
             onChange={(e) => setForm({ ...form, targetPrice: e.target.value })} />
           <label className="block text-sm text-gray-600">
             <span className="mb-1 block">تاريخ التسليم المطلوب (اختياري)</span>
-            <input className={field} type="date" value={form.deliveryDate}
-              onChange={(e) => setForm({ ...form, deliveryDate: e.target.value })} />
+            <DateField value={form.deliveryDate} onChange={(v) => setForm({ ...form, deliveryDate: v })} yearsAhead={3} />
           </label>
         </div>
         {error && <p className="text-red-600">{error}</p>}

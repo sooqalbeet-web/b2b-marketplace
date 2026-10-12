@@ -1,5 +1,6 @@
 "use client";
 
+import DateField from "@/components/DateField";
 import { label } from "@/lib/labels";
 import { useCallback, useEffect, useState } from "react";
 
@@ -144,7 +145,7 @@ export default function FactoryProfilePage() {
           <input className={field} placeholder="الجهة المانحة" value={cert.issuer} onChange={(e) => setCert({ ...cert, issuer: e.target.value })} />
           <label className="block text-sm text-gray-600">
             <span className="mb-1 block">تاريخ انتهاء الشهادة (اختياري)</span>
-            <input className={field} type="date" value={cert.expiresAt} onChange={(e) => setCert({ ...cert, expiresAt: e.target.value })} />
+            <DateField value={cert.expiresAt} onChange={(v) => setCert({ ...cert, expiresAt: v })} yearsAhead={20} />
           </label>
           <label className="block text-sm text-gray-600">
             <span className="mb-1 block">ملف الشهادة (PDF أو صورة)</span>

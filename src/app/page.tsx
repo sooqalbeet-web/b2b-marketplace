@@ -24,7 +24,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
         <div className="pointer-events-none absolute -start-24 -top-24 h-72 w-72 rounded-full bg-white/5" />
         <div className="pointer-events-none absolute -bottom-32 end-10 h-80 w-80 rounded-full bg-white/5" />
         <div className="relative mx-auto flex max-w-6xl flex-col items-center gap-10 px-4 py-16 md:flex-row md:py-24">
-          <Image src="/emblem.png" alt="" width={512} height={512} className="h-40 w-40 shrink-0 rounded-full bg-white px-3 pb-1.5 pt-[18px] shadow-2xl ring-8 ring-white/10 md:h-52 md:w-52" priority />
+          <Image src="/emblem.png" alt="" width={512} height={512} className="h-40 w-40 shrink-0 rounded-full bg-white px-3 pb-0.5 pt-[22px] shadow-2xl ring-8 ring-white/10 md:h-52 md:w-52" priority />
           <div className="text-center md:text-start">
             <h1 className="text-3xl font-bold leading-tight md:text-5xl">اشترِ مباشرة من <span className="text-red-200">المصانع</span></h1>
             <p className="mt-4 max-w-2xl text-base leading-8 text-white/85 md:text-lg">

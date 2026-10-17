@@ -25,7 +25,7 @@ export default function LoginPage() {
     // Only follow same-site relative redirects.
     const next = new URLSearchParams(window.location.search).get("next");
     const safe = next && next.startsWith("/") && !next.startsWith("//") ? next : null;
-    window.location.href = d.user.verified === false ? "/verify-email" : safe ?? (d.user.role === "FACTORY" ? "/factory/dashboard" : d.user.role === "ADMIN" ? "/admin" : "/marketplace");
+    window.location.href = d.user.verified === false ? "/verify-email" : safe ?? (d.user.role === "FACTORY" ? "/factory/dashboard" : d.user.role === "PROVIDER" ? "/provider/profile" : d.user.role === "ADMIN" ? "/admin" : "/marketplace");
   }
 
   const field = "w-full rounded border p-2";
@@ -41,7 +41,7 @@ export default function LoginPage() {
         onKeyDown={(e) => e.key === "Enter" && submit()} />
       {error && <p className="text-sm text-red-600">{error}</p>}
       <button disabled={busy || !email || !password} onClick={submit}
-        className="w-full rounded bg-brand p-2 text-white disabled:opacity-50">دخول</button>
+        className="w-full rounded bg-brand p-2 text-white disabled:opacity-50">تسجيل الدخول</button>
       <p className="text-sm text-gray-500">
         ليس لديك حساب؟ <Link href="/register" className="text-brand">أنشئ حساباً</Link>
       </p>

@@ -24,7 +24,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
         <div className="pointer-events-none absolute -start-24 -top-24 h-72 w-72 rounded-full bg-white/5" />
         <div className="pointer-events-none absolute -bottom-32 end-10 h-80 w-80 rounded-full bg-white/5" />
         <div className="relative mx-auto flex max-w-6xl flex-col items-center gap-10 px-4 py-16 md:flex-row md:py-24">
-          <Image src="/emblem.png" alt="" width={512} height={512} className="h-40 w-40 shrink-0 rounded-full bg-white px-3 pb-0.5 pt-[22px] shadow-2xl ring-8 ring-white/10 md:h-52 md:w-52" priority />
+          <Image src="/emblem.png" alt="" width={512} height={512} className="h-40 w-40 shrink-0 rounded-full bg-white px-3 pb-1.5 pt-[18px] shadow-2xl ring-8 ring-white/10 md:h-52 md:w-52" priority />
           <div className="text-center md:text-start">
             <h1 className="text-3xl font-bold leading-tight md:text-5xl">اشترِ مباشرة من <span className="text-red-200">المصانع</span></h1>
             <p className="mt-4 max-w-2xl text-base leading-8 text-white/85 md:text-lg">
@@ -63,7 +63,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
       <section className="mx-auto mt-16 max-w-5xl px-4">
         <div className="rounded-2xl bg-brand-light p-8 text-center ring-1 ring-brand/10">
           <h2 className="text-xl font-bold text-brand md:text-2xl">جاهز لبدء أول طلب جملة؟</h2>
-          <p className="mt-2 text-gray-600">أنشئ حسابك مجاناً وابدأ بطلب عروض الأسعار من المصانع.</p>
+          <p className="mt-2 text-gray-600">أنشئ حسابك مجاناً لفترة محدودة وابدأ بطلب عروض الأسعار من المصانع.</p>
           <Link href="/register" className="mt-5 inline-block rounded-lg bg-brand px-7 py-3 font-semibold text-white shadow-sm hover:bg-brand-dark">إنشاء حساب</Link>
         </div>
       </section>

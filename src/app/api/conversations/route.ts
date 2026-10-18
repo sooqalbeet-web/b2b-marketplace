@@ -57,13 +57,14 @@ export async function POST(request: NextRequest) {
       select: { userId: true },
     });
     if (!factory) throw new HttpError(404, "Factory not found.");
+    const otherUserId = factory.userId;
 
     const me = session.user.id;
     const existing = await prisma.conversation.findFirst({
       where: {
         AND: [
           { participants: { some: { userId: me } } },
-          { participants: { some: { userId: factory.userId } } },
+          { participants: { some: { userId: otherUserId } } },
         ],
       },
     });
@@ -71,7 +72,7 @@ export async function POST(request: NextRequest) {
 
     const conversation = await prisma.conversation.create({
       data: {
-        participants: { create: [{ userId: me }, { userId: factory.userId }] },
+        participants: { create: [{ userId: me }, { userId: otherUserId }] },
       },
     });
 

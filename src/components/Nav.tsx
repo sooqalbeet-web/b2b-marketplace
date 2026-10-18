@@ -8,8 +8,8 @@ import { useEffect, useState } from "react";
 type User = { id: string; name: string; role: "CLIENT" | "FACTORY" | "ADMIN" | "PROVIDER"; verified: boolean } | null;
 
 const LINKS: Record<string, [string, string][]> = {
-  CLIENT: [["السوق", "/marketplace"], ["شركات الشحن", "/providers"], ["عروض أسعاري", "/quotations"], ["طلباتي", "/orders"], ["الرسائل", "/messages"]],
-  FACTORY: [["لوحة التحكم", "/factory/dashboard"], ["عروض الأسعار", "/factory/quotations"], ["الطلبات", "/factory/orders"], ["المنتجات", "/factory/products"], ["المخزون", "/factory/inventory"], ["الجودة", "/factory/quality"], ["الرسائل", "/messages"], ["الملف", "/factory/profile"], ["شركات الشحن", "/providers"]],
+  CLIENT: [["السوق", "/marketplace"], ["عروض أسعاري", "/quotations"], ["طلباتي", "/orders"], ["الرسائل", "/messages"]],
+  FACTORY: [["لوحة التحكم", "/factory/dashboard"], ["عروض الأسعار", "/factory/quotations"], ["الطلبات", "/factory/orders"], ["المنتجات", "/factory/products"], ["المخزون", "/factory/inventory"], ["الجودة", "/factory/quality"], ["الرسائل", "/messages"], ["الملف", "/factory/profile"]],
   PROVIDER: [["ملف الشركة", "/provider/profile"], ["دليل شركات الشحن", "/providers"], ["السوق", "/marketplace"], ["الرسائل", "/messages"]],
   ADMIN: [["لوحة الإدارة", "/admin"], ["السوق", "/marketplace"]],
 };
@@ -48,7 +48,6 @@ export default function Nav() {
           ready && (
             <>
               <Link href="/marketplace" className="rounded-md px-2.5 py-1.5 font-medium text-gray-700 hover:bg-gray-100 hover:text-brand">السوق</Link>
-              <Link href="/providers" className="rounded-md px-2.5 py-1.5 font-medium text-gray-700 hover:bg-gray-100 hover:text-brand">شركات الشحن</Link>
               <Link href="/login" className="ms-auto rounded-lg border border-gray-300 px-4 py-1.5 font-medium text-gray-700 hover:bg-gray-50">تسجيل الدخول</Link>
               <Link href="/register" className="rounded-lg bg-accent px-4 py-1.5 font-medium text-white shadow-sm hover:bg-accent-dark">إنشاء حساب</Link>
             </>

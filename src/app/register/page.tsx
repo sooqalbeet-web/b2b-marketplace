@@ -39,7 +39,8 @@ export default function RegisterPage() {
 
   const doneText = !done ? "" : !done.verified
     ? "أرسلنا رمز التحقق إلى بريدك الإلكتروني، وننقلك الآن لإدخاله."
-    : done.role === "FACTORY" ? "ننقلك الآن إلى صفحة المصنع لتبدأ بإضافة منتجاتك." : "ننقلك الآن إلى دليل المصانع.";
+    : done.role === "FACTORY" ? "ننقلك الآن إلى صفحة المصنع لتبدأ بإضافة منتجاتك."
+    : "ننقلك الآن إلى دليل المصانع.";
 
   return (
     <div className="mx-auto mt-12 max-w-md space-y-3 p-6">

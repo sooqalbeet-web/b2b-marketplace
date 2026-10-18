@@ -173,8 +173,8 @@ export default function AdminPage() {
                       <tr className="border-b bg-gray-50">
                         <td colSpan={9} className="px-4 py-3 text-sm">
                           <div className="grid gap-2 md:grid-cols-2">
-                            <div>السجل التجاري: <b dir="ltr">{(u.role === "FACTORY" ? u.factory?.commercialRegNo : u.companyRegNo) ?? "—"}</b></div>
-                            <div>الرقم الضريبي: <b dir="ltr">{(u.role === "FACTORY" ? u.factory?.taxNo : u.companyTaxNo) ?? "—"}</b></div>
+                                <div>السجل التجاري: <b dir="ltr">{(u.role === "FACTORY" ? u.factory?.commercialRegNo : u.companyRegNo) ?? "—"}</b></div>
+                                <div>الرقم الضريبي: <b dir="ltr">{(u.role === "FACTORY" ? u.factory?.taxNo : u.companyTaxNo) ?? "—"}</b></div>
                             {u.role === "FACTORY" && u.factory && (
                               <div>حالة التوثيق: <b>{VERIFICATION[u.factory.verification] ?? u.factory.verification}</b></div>
                             )}

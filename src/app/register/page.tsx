@@ -7,7 +7,7 @@ import PhoneInput from "@/components/PhoneInput";
 import { buildPhone, DEFAULT_COUNTRY } from "@/lib/countries";
 
 export default function RegisterPage() {
-  const [role, setRole] = useState<"CLIENT" | "FACTORY">("CLIENT");
+  const [role, setRole] = useState<"CLIENT" | "FACTORY">("FACTORY");
   const [f, setF] = useState({ name: "", email: "", password: "", phone: "", factoryName: "", description: "", region: "", commercialRegNo: "", taxNo: "", companyName: "", companyCity: "", companyRegNo: "", companyTaxNo: "" });
   const [country, setCountry] = useState(DEFAULT_COUNTRY);
   const [error, setError] = useState("");
@@ -57,8 +57,8 @@ export default function RegisterPage() {
       <h1 className="text-center text-2xl font-bold text-brand">إنشاء حساب</h1>
 
       <div className="flex gap-2">
-        <button className={tab("CLIENT")} onClick={() => setRole("CLIENT")}>أنا مشترٍ</button>
-        <button className={tab("FACTORY")} onClick={() => setRole("FACTORY")}>أنا مصنع</button>
+        <button className={tab("FACTORY")} onClick={() => setRole("FACTORY")}>المصنع</button>
+        <button className={tab("CLIENT")} onClick={() => setRole("CLIENT")}>التاجر أو المشتري</button>
       </div>
 
       <input className={field} placeholder="اسمك" value={f.name} onChange={set("name")} />

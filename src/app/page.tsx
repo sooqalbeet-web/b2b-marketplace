@@ -26,13 +26,13 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
         <div className="relative mx-auto flex max-w-6xl flex-col items-center gap-10 px-4 py-16 md:flex-row md:py-24">
           <Image src="/emblem.png" alt="" width={512} height={512} className="h-40 w-40 shrink-0 rounded-full bg-white px-3 pb-0.5 pt-[22px] shadow-2xl ring-8 ring-white/10 md:h-52 md:w-52" priority />
           <div className="text-center md:text-start">
-            <h1 className="text-3xl font-bold leading-tight md:text-5xl">اشترِ مباشرة من <span className="text-red-200">المصانع</span></h1>
+            <h1 className="text-3xl font-bold leading-tight md:text-5xl">حيث تلتقي المصانع بمشتري الجملة... <span className="text-red-200">وتنمو الصادرات</span></h1>
             <p className="mt-4 max-w-2xl text-base leading-8 text-white/85 md:text-lg">
-              سوق جملة يجمع المشترين والمصنّعين: اطلب عروض الأسعار، فاوض على أسعار الكميات الكبيرة وأدر طلباتك في مكان واحد.
+              سوق جملة يجمع المصانع بمشترين من دول عديدة: اعرض منتجاتك، واستقبل طلبات الأسعار، وفاوض، وتابع طلباتك في مكان واحد.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3 md:justify-start">
+              <Link href="/register" className="rounded-lg bg-accent px-6 py-3 font-semibold text-white shadow-sm hover:bg-accent-dark">سجّل مصنعك الآن</Link>
               <Link href="/marketplace" className="rounded-lg bg-white px-6 py-3 font-semibold text-brand shadow-sm hover:bg-brand-light">تصفّح المصانع</Link>
-              <Link href="/register" className="rounded-lg bg-accent px-6 py-3 font-semibold text-white shadow-sm hover:bg-accent-dark">انضم كمشترٍ أو مصنع</Link>
             </div>
           </div>
         </div>

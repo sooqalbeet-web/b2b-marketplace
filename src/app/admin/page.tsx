@@ -124,6 +124,8 @@ export default function AdminPage() {
           <input className="min-w-56 flex-1 rounded border p-2" placeholder="ابحث بالاسم أو البريد أو الهاتف أو اسم الشركة…"
             value={q} onChange={(e) => setQ(e.target.value)} />
           <button type="submit" className="rounded-lg bg-brand px-6 py-2 font-semibold text-white hover:bg-brand-dark">بحث</button>
+          <a href={`/api/admin/users/export?${new URLSearchParams({ ...(applied.tab ? { role: applied.tab } : {}), ...(applied.q ? { q: applied.q } : {}) })}`}
+            className="rounded-lg border border-green-700 px-5 py-2 font-semibold text-green-700 hover:bg-green-50">تصدير Excel</a>
         </form>
 
         <div className="overflow-x-auto rounded-xl bg-white shadow-sm ring-1 ring-black/5">

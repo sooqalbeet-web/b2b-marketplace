@@ -1,12 +1,14 @@
 import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
+import type { Role as PrismaRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 export const SESSION_COOKIE = "session";
 const MAX_AGE = 60 * 60 * 24 * 7; // 7 days
 
-export type Role = "CLIENT" | "FACTORY" | "ADMIN";
+// Always the same as the Role enum in prisma/schema.prisma, so the two can never get out of sync.
+export type Role = PrismaRole;
 export type SessionUser = { id: string; role: Role; name: string; verified: boolean };
 
 export class AuthError extends Error {

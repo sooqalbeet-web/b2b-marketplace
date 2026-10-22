@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { requireAuth, AuthError } from "@/lib/auth";
+import { requireAuth, AuthError, type Role } from "@/lib/auth";
 import { ar } from "@/lib/errors-ar";
 
 export class HttpError extends Error {
@@ -8,7 +8,7 @@ export class HttpError extends Error {
   }
 }
 
-export async function requireRole(role: "CLIENT" | "FACTORY" | "ADMIN") {
+export async function requireRole(role: Role) {
   const session = await requireAuth();
   if (session.user.role !== role) throw new HttpError(403, "Unauthorized.");
   return session;

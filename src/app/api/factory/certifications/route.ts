@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { isPdfFileUrl } from "@/lib/storage";
 import { HttpError, requireFactory, requireRole, errorResponse } from "@/lib/guards";
 
 // A certification is always created unverified; only an admin review marks it verified.
@@ -13,8 +14,8 @@ export async function POST(request: NextRequest) {
     if (!name) throw new HttpError(400, "Certification name is required.");
 
     const fileUrl = b.fileUrl ? String(b.fileUrl) : null;
-    if (fileUrl && (!fileUrl.startsWith("/uploads/") || fileUrl.includes(".."))) {
-      throw new HttpError(400, "Invalid file URL.");
+    if (fileUrl && !isPdfFileUrl(fileUrl)) {
+      throw new HttpError(400, "A PDF file is required.");
     }
 
     const date = (v: unknown) => {

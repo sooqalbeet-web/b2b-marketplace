@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { isPdfFileUrl, isTrustedFileUrl } from "@/lib/storage";
 import { Prisma } from "@prisma/client";
 import { HttpError, requireFactory, requireRole, errorResponse } from "@/lib/guards";
 import { normalizeRegNo, normalizeTaxNo } from "@/lib/validators";
 
 const isHttp = (s: string) => /^https?:\/\/\S+$/i.test(s);
-const isLocalUpload = (s: string) => s.startsWith("/uploads/") && !s.includes("..");
 
 export async function GET() {
   try {
@@ -50,8 +50,12 @@ export async function PATCH(request: NextRequest) {
       data.website = w || null;
     }
     if (b.logoUrl !== undefined) {
-      if (b.logoUrl && !isLocalUpload(b.logoUrl) && !isHttp(b.logoUrl)) throw new HttpError(400, "Invalid logo URL.");
+      if (b.logoUrl && !isTrustedFileUrl(b.logoUrl) && !isHttp(b.logoUrl)) throw new HttpError(400, "Invalid logo URL.");
       data.logoUrl = b.logoUrl || null;
+    }
+    if (b.registryFileUrl !== undefined) {
+      if (b.registryFileUrl && !isPdfFileUrl(b.registryFileUrl)) throw new HttpError(400, "A PDF file is required.");
+      data.registryFileUrl = b.registryFileUrl || null;
     }
 
     // Registry numbers can be set once (legacy accounts); after that only support can change them.

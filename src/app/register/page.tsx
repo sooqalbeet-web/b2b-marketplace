@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import PhoneInput from "@/components/PhoneInput";
+import ImageRules from "@/components/ImageRules";
 import { buildPhone, DEFAULT_COUNTRY } from "@/lib/countries";
 
 export default function RegisterPage() {
@@ -94,6 +95,7 @@ export default function RegisterPage() {
           <input className={field} dir="ltr" placeholder="رقم السجل التجاري / الصناعي" value={f.commercialRegNo} onChange={set("commercialRegNo")} />
           <input className={field} dir="ltr" placeholder="الرقم الضريبي" value={f.taxNo} onChange={set("taxNo")} />
           <p className="text-xs text-gray-500">يجب أن يطابق اسم المصنع الاسم الرسمي في السجل؛ ولا يُسمح بأكثر من حساب لنفس السجل.</p>
+          <ImageRules open />
         </>
       )}
 

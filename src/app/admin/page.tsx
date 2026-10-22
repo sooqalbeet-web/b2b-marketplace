@@ -5,7 +5,7 @@ import { countryByCode, flagUrl } from "@/lib/countries";
 
 type F = {
   id: string; name: string; region: string; description: string | null; address: string | null;
-  commercialRegNo: string | null; taxNo: string | null;
+  commercialRegNo: string | null; taxNo: string | null; registryFileUrl: string | null;
   user: { name: string; email: string; phone: string | null };
   certifications: { id: string; name: string; issuer: string | null; fileUrl: string | null }[];
 };
@@ -204,6 +204,7 @@ export default function AdminPage() {
             <div className="font-semibold">{f.name} <span className="text-sm font-normal text-gray-500">· {f.region}</span></div>
             <div className="text-sm text-gray-500">{f.user.name} — {f.user.email} — <span dir="ltr">{f.user.phone}</span></div>
             <div className="text-sm">السجل: <b dir="ltr">{f.commercialRegNo ?? "—"}</b> · الرقم الضريبي: <b dir="ltr">{f.taxNo ?? "—"}</b></div>
+            <div className="text-sm">ملف السجل التجاري: {f.registryFileUrl ? <a href={f.registryFileUrl} target="_blank" rel="noreferrer" className="text-brand underline">عرض PDF</a> : <span className="text-gray-400">غير مرفوع</span>}</div>
             <p className="mt-2 text-sm">{f.description}</p>
             <p className="text-sm text-gray-500">{f.address}</p>
             <ul className="mt-2 text-sm">

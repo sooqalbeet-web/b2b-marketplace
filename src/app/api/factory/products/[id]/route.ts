@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { assertImageBudget, parseImages } from "@/lib/storage";
 import { HttpError, requireFactory, requireRole, errorResponse } from "@/lib/guards";
 
 // Edit a product or toggle it active/inactive. SKU is immutable (it is referenced in history).
@@ -28,6 +29,11 @@ export async function PATCH(
     }
     if (b.leadTimeDays !== undefined) {
       data.leadTimeDays = b.leadTimeDays === null || b.leadTimeDays === "" ? null : Number(b.leadTimeDays);
+    }
+    if (b.imageUrls !== undefined) {
+      const imageUrls = parseImages(b.imageUrls);
+      if (imageUrls.length) await assertImageBudget(factory.id, imageUrls.length, product.id);
+      data.imageUrls = imageUrls;
     }
     if (b.categoryId) {
       const category = await prisma.category.findUnique({ where: { id: b.categoryId } });

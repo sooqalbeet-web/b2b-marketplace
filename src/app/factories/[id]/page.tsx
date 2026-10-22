@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { countryByCode, flagUrl } from "@/lib/countries";
+import { thumb } from "@/lib/img";
 import DateField from "@/components/DateField";
 
 type Product = { id: string; name: string; sku: string; unit: string; moq: number; leadTimeDays: number | null; imageUrls: string[] | null };
@@ -131,7 +132,7 @@ export default function FactoryProfilePage() {
               className={`rounded border p-3 text-start ${form.productId === p.id ? "border-brand" : ""}`}>
               {p.imageUrls?.[0] && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={p.imageUrls[0]} alt="" className="mb-2 h-32 w-full rounded object-cover" />
+                <img src={thumb(p.imageUrls[0], 640)} alt="" loading="lazy" className="mb-2 h-32 w-full rounded object-cover" />
               )}
               <b>{p.name}</b>
               <div className="text-sm text-gray-500">

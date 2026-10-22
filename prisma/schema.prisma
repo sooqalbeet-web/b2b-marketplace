@@ -11,6 +11,7 @@ enum Role {
   CLIENT
   FACTORY
   ADMIN
+  PROVIDER
 }
 
 enum PartyRole {
@@ -90,6 +91,7 @@ model User {
 
   emailVerification EmailVerification?
   factory       Factory?
+  provider      ServiceProvider?
   quotations    Quotation[]
   orders        Order[]
   participants  ConversationParticipant[]
@@ -113,6 +115,7 @@ model Factory {
   name         String
   description  String? @db.Text
   logoUrl      String? @db.Text
+  registryFileUrl String? @db.Text
   country      String             @default("CN")
   region       String
   address      String? @db.Text
@@ -405,4 +408,26 @@ model Message {
   sender       User         @relation(fields: [senderId], references: [id])
 
   @@index([conversationId, createdAt])
+}
+
+// Shipping / customs-clearance / logistics companies (listed in the providers directory).
+// services and countriesServed are stored as ",code1,code2," text so they can be filtered in SQL.
+model ServiceProvider {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName     String
+  description     String   @db.Text
+  country         String   @default("JO")
+  city            String
+  licenseNo       String?
+  services        String   @db.Text
+  countriesServed String   @db.Text
+  verification    VerificationStatus @default(UNVERIFIED)
+  featured        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([country])
+  @@index([verification])
 }

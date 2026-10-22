@@ -20,6 +20,7 @@ export async function POST() {
     if (!factory.commercialRegNo || !factory.taxNo) {
       throw new HttpError(400, "Add your commercial registration and tax numbers to your profile first.");
     }
+    if (!factory.registryFileUrl) throw new HttpError(400, "Upload the commercial registration PDF first.");
     if (withDocs === 0) throw new HttpError(400, "Upload at least one certification document first.");
     if (!hasBasics) throw new HttpError(400, "Add a description and an address to your profile first.");
 

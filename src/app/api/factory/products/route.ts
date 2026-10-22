@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { assertImageBudget, parseImages } from "@/lib/storage";
 import { HttpError, requireFactory, requireRole, errorResponse } from "@/lib/guards";
 
 export async function GET() {
@@ -37,6 +38,8 @@ export async function POST(request: NextRequest) {
 
     const category = await prisma.category.findUnique({ where: { id: b.categoryId } });
     if (!category) throw new HttpError(404, "Category not found.");
+    const imageUrls = parseImages(b.imageUrls);
+    if (imageUrls.length) await assertImageBudget(factory.id, imageUrls.length);
 
     try {
       const product = await prisma.product.create({
@@ -49,6 +52,7 @@ export async function POST(request: NextRequest) {
           unit: b.unit || "pcs",
           moq,
           leadTimeDays: b.leadTimeDays ? Number(b.leadTimeDays) : null,
+          ...(imageUrls.length ? { imageUrls } : {}),
           inventory: { create: {} }, // every product starts with a zero-stock record
         },
       });

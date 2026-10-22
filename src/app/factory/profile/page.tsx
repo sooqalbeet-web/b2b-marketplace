@@ -3,18 +3,20 @@
 import DateField from "@/components/DateField";
 import { label } from "@/lib/labels";
 import { useCallback, useEffect, useState } from "react";
+import { compressImage } from "@/lib/image-compress";
+import { thumb } from "@/lib/img";
 
 type Cert = { id: string; name: string; issuer: string | null; fileUrl: string | null; expiresAt: string | null; verified: boolean };
 type Cat = { id: string; nameEn: string; nameAr: string };
 type Factory = {
   name: string; region: string; description: string | null; address: string | null;
-  website: string | null; commercialRegNo: string | null; taxNo: string | null; capabilities: string | null; shippingReturnPolicy: string | null; logoUrl: string | null;
+  website: string | null; commercialRegNo: string | null; taxNo: string | null; capabilities: string | null; shippingReturnPolicy: string | null; logoUrl: string | null; registryFileUrl: string | null;
   verification: string; categories: { categoryId: string }[]; certifications: Cert[];
 };
 
-async function upload(file: File): Promise<string> {
+async function upload(file: File, maxSide = 2000): Promise<string> {
   const fd = new FormData();
-  fd.append("file", file);
+  fd.append("file", await compressImage(file, { maxSide, quality: 0.85 }));
   const r = await fetch("/api/uploads", { method: "POST", body: fd });
   const d = await r.json();
   if (!r.ok) throw new Error(d.error);
@@ -22,7 +24,7 @@ async function upload(file: File): Promise<string> {
 }
 
 export default function FactoryProfilePage() {
-  const [f, setF] = useState({ name: "", region: "", description: "", address: "", website: "", capabilities: "", shippingReturnPolicy: "", commercialRegNo: "", taxNo: "", logoUrl: "" });
+  const [f, setF] = useState({ name: "", region: "", description: "", address: "", website: "", capabilities: "", shippingReturnPolicy: "", commercialRegNo: "", taxNo: "", logoUrl: "", registryFileUrl: "" });
   const [locked, setLocked] = useState({ reg: false, tax: false });
   const [catIds, setCatIds] = useState<string[]>([]);
   const [cats, setCats] = useState<Cat[]>([]);
@@ -39,7 +41,7 @@ export default function FactoryProfilePage() {
     const x: Factory = d.factory;
     setF({
       name: x.name, region: x.region, description: x.description ?? "", address: x.address ?? "",
-      website: x.website ?? "", capabilities: x.capabilities ?? "", shippingReturnPolicy: x.shippingReturnPolicy ?? "", commercialRegNo: x.commercialRegNo ?? "", taxNo: x.taxNo ?? "", logoUrl: x.logoUrl ?? "",
+      website: x.website ?? "", capabilities: x.capabilities ?? "", shippingReturnPolicy: x.shippingReturnPolicy ?? "", commercialRegNo: x.commercialRegNo ?? "", taxNo: x.taxNo ?? "", logoUrl: x.logoUrl ?? "", registryFileUrl: x.registryFileUrl ?? "",
     });
     setCatIds(x.categories.map((c) => c.categoryId));
     setCerts(x.certifications);
@@ -66,9 +68,9 @@ export default function FactoryProfilePage() {
     return true;
   }
 
-  async function pick(file: File | undefined, apply: (url: string) => void) {
+  async function pick(file: File | undefined, apply: (url: string) => void, maxSide?: number) {
     if (!file) return;
-    try { apply(await upload(file)); setError(""); }
+    try { apply(await upload(file, maxSide)); setError(""); }
     catch (e) { setError((e as Error).message); }
   }
 
@@ -86,9 +88,20 @@ export default function FactoryProfilePage() {
       <section className="space-y-2 rounded-lg border p-4">
         <h2 className="font-semibold">معلومات الشركة</h2>
         <div className="flex items-center gap-3">
-          {f.logoUrl && <img src={f.logoUrl} alt="" className="h-14 w-14 rounded border object-cover" />}
+          {f.logoUrl && <img src={thumb(f.logoUrl, 160)} alt="" className="h-14 w-14 rounded border object-cover" />}
           <input type="file" accept="image/png,image/jpeg,image/webp"
-            onChange={(e) => pick(e.target.files?.[0], (url) => setF({ ...f, logoUrl: url }))} />
+            onChange={(e) => pick(e.target.files?.[0], (url) => setF({ ...f, logoUrl: url }), 800)} />
+        </div>
+        <div className="rounded border bg-white p-2 text-sm">
+          <span className="mb-1 block text-gray-600">ملف السجل التجاري (PDF فقط) — مطلوب لطلب التوثيق</span>
+          <div className="flex flex-wrap items-center gap-3">
+            <input type="file" accept="application/pdf"
+              onChange={(e) => pick(e.target.files?.[0], (url) => setF({ ...f, registryFileUrl: url }))} />
+            {f.registryFileUrl
+              ? <a href={f.registryFileUrl} target="_blank" rel="noreferrer" className="text-brand underline">عرض الملف المرفوع</a>
+              : <span className="text-gray-400">لم يُرفع ملف بعد</span>}
+          </div>
+          <p className="mt-1 text-xs text-gray-500">بعد اختيار الملف اضغط «حفظ» لتثبيته.</p>
         </div>
         <input className={field} placeholder="اسم المصنع" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
         <input className={field} placeholder="المنطقة" value={f.region} onChange={(e) => setF({ ...f, region: e.target.value })} />
@@ -148,8 +161,8 @@ export default function FactoryProfilePage() {
             <DateField value={cert.expiresAt} onChange={(v) => setCert({ ...cert, expiresAt: v })} yearsAhead={20} />
           </label>
           <label className="block text-sm text-gray-600">
-            <span className="mb-1 block">ملف الشهادة (PDF أو صورة)</span>
-            <input type="file" accept="application/pdf,image/png,image/jpeg"
+            <span className="mb-1 block">ملف الشهادات (PDF فقط)</span>
+            <input type="file" accept="application/pdf"
               onChange={(e) => pick(e.target.files?.[0], (url) => setCert({ ...cert, fileUrl: url }))} />
           </label>
         </div>
